@@ -3,6 +3,73 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export type Facing = "user" | "environment";
 export type Orientation = "vertical" | "horizontal";
 export type Fit = "cover" | "contain";
+/** Categoria do erro, para a UI mostrar a ação certa. */
+export type CameraErrorKind =
+  | "iframe"
+  | "denied"
+  | "notfound"
+  | "busy"
+  | "unsupported"
+  | "unknown";
+
+const NO_RETRY_ERRORS = ["NotAllowedError", "SecurityError", "NotFoundError", "NotReadableError"];
+
+function isInsideIframe() {
+  try {
+    return typeof window !== "undefined" && window.self !== window.top;
+  } catch {
+    return true;
+  }
+}
+
+function describeCameraError(e: unknown): { kind: CameraErrorKind; message: string } {
+  const name = e instanceof DOMException ? e.name : "";
+  if (name === "NotAllowedError" || name === "SecurityError") {
+    if (isInsideIframe()) {
+      return {
+        kind: "iframe",
+        message:
+          "A câmera está bloqueada pela janela de prévia. Abra o app em uma aba separada para gravar.",
+      };
+    }
+    return {
+      kind: "denied",
+      message:
+        "Permissão de câmera/microfone negada. Libere o acesso nas configurações do navegador e recarregue a página.",
+    };
+  }
+  if (name === "NotFoundError" || name === "OverconstrainedError") {
+    return {
+      kind: "notfound",
+      message: "Nenhuma câmera foi encontrada neste computador.",
+    };
+  }
+  if (name === "NotReadableError" || name === "AbortError") {
+    return {
+      kind: "busy",
+      message:
+        "A câmera está sendo usada por outro programa (Zoom, Teams, Meet...). Feche-o e tente de novo.",
+    };
+  }
+  if (e instanceof Error && /não permite acessar a câmera/.test(e.message)) {
+    return { kind: "unsupported", message: e.message };
+  }
+  return {
+    kind: "unknown",
+    message: e instanceof Error ? e.message : "Não foi possível abrir a câmera.",
+  };
+}
+
+/** Quantas câmeras o dispositivo tem (para esconder o botão de trocar lente no desktop). */
+async function countCameras() {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices.filter((d) => d.kind === "videoinput").length;
+  } catch {
+    return 0;
+  }
+}
+
 
 function pickMimeType() {
   if (typeof MediaRecorder === "undefined") return undefined;
@@ -118,6 +185,9 @@ async function buildOrientedStream(
 export function useRecorder() {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorKind, setErrorKind] = useState<CameraErrorKind | null>(null);
+  const [cameraCount, setCameraCount] = useState(0);
+
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
@@ -172,6 +242,7 @@ export function useRecorder() {
   const start = useCallback(
     async (facing: Facing, orientation: Orientation = "vertical") => {
       setError(null);
+      setErrorKind(null);
       try {
         if (!navigator.mediaDevices?.getUserMedia) {
           throw new Error("Este navegador não permite acessar a câmera.");
@@ -180,12 +251,20 @@ export function useRecorder() {
         orientationRef.current = orientation;
         // Não forçamos aspectRatio: pedir 9:16 faz o iPhone cortar as laterais
         // do sensor (parece "zoom"). O enquadramento é feito depois no canvas.
+        // facingMode como preferência: no desktop não existe câmera traseira.
         const baseVideo: MediaTrackConstraints = {
-          facingMode: facing,
+          facingMode: { ideal: facing },
           width: { ideal: 1920 },
           height: { ideal: 1080 },
         };
-        let s = await navigator.mediaDevices.getUserMedia({ video: baseVideo, audio: true });
+        let s: MediaStream;
+        try {
+          s = await navigator.mediaDevices.getUserMedia({ video: baseVideo, audio: true });
+        } catch (first) {
+          // Última tentativa sem nenhuma restrição de lente/resolução.
+          if (first instanceof DOMException && NO_RETRY_ERRORS.includes(first.name)) throw first;
+          s = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        }
 
         // Depois da permissão os labels ficam visíveis: tenta trocar para a lente mais aberta.
         const currentLabel = s.getVideoTracks()[0]?.label;
@@ -206,6 +285,7 @@ export function useRecorder() {
         streamRef.current = s;
         mirrorRef.current = facing === "user";
 
+        void countCameras().then(setCameraCount);
 
         const track = s.getVideoTracks()[0];
         const caps = (track?.getCapabilities?.() ?? {}) as { zoom?: { min: number; max: number } };
@@ -236,20 +316,16 @@ export function useRecorder() {
         if (oriented.aspect) setAspect(oriented.aspect);
         setStream(oriented.stream);
         return true;
-
       } catch (e) {
-        const msg =
-          e instanceof DOMException && (e.name === "NotAllowedError" || e.name === "SecurityError")
-            ? "Permissão de câmera/microfone negada. Libere o acesso nas configurações do navegador."
-            : e instanceof Error
-              ? e.message
-              : "Não foi possível abrir a câmera.";
-        setError(msg);
+        const { kind, message } = describeCameraError(e);
+        setErrorKind(kind);
+        setError(message);
         return false;
       }
     },
     [stopStream],
   );
+
 
 
   useEffect(() => {
@@ -317,12 +393,20 @@ export function useRecorder() {
     });
   }, []);
 
+  useEffect(() => {
+    void countCameras().then(setCameraCount);
+  }, []);
+
   useEffect(() => () => stopStream(), [stopStream]);
+
 
   return {
     stream,
     error,
+    errorKind,
+    cameraCount,
     setError,
+
     recording,
     elapsed,
     resultUrl,
