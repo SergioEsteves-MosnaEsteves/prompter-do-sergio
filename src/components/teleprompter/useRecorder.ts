@@ -222,7 +222,21 @@ export function useRecorder() {
         }
         digitalZoomRef.current = 1;
         setZoomState(1);
+
+        // A prévia usa exatamente o mesmo canvas que será gravado (1:1).
+        const oriented = await buildOrientedStream(
+          s,
+          orientation,
+          digitalZoomRef,
+          fitRef,
+          mirrorRef,
+        );
+        canvasStopRef.current = oriented.stop;
+        outputRef.current = oriented.stream;
+        if (oriented.aspect) setAspect(oriented.aspect);
+        setStream(oriented.stream);
         return true;
+
       } catch (e) {
         const msg =
           e instanceof DOMException && (e.name === "NotAllowedError" || e.name === "SecurityError")
