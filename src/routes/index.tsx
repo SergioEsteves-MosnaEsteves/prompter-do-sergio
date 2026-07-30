@@ -1,6 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Camera, Download, RefreshCw, SwitchCamera } from "lucide-react";
+import {
+  Camera,
+  Download,
+  RectangleHorizontal,
+  RectangleVertical,
+  RefreshCw,
+  SwitchCamera,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
@@ -9,7 +16,11 @@ import {
   type PrompterSettings,
 } from "@/components/teleprompter/TeleprompterOverlay";
 import { RecorderControls } from "@/components/teleprompter/RecorderControls";
-import { useRecorder, type Facing } from "@/components/teleprompter/useRecorder";
+import {
+  useRecorder,
+  type Facing,
+  type Orientation,
+} from "@/components/teleprompter/useRecorder";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -41,6 +52,7 @@ function Index() {
   const [stage, setStage] = useState<Stage>("setup");
   const [text, setText] = useState("");
   const [facing, setFacing] = useState<Facing>("user");
+  const [orientation, setOrientation] = useState<Orientation>("vertical");
   const [settings, setSettings] = useState<PrompterSettings>(DEFAULTS);
   const [scrolling, setScrolling] = useState(false);
   const [resetKey, setResetKey] = useState(0);
@@ -66,7 +78,7 @@ function Index() {
   );
 
   const openCamera = async (f: Facing = facing) => {
-    const ok = await rec.start(f);
+    const ok = await rec.start(f, orientation);
     if (ok) {
       setStage("camera");
       setScrolling(false);
@@ -77,7 +89,7 @@ function Index() {
   const flipCamera = async () => {
     const next: Facing = facing === "user" ? "environment" : "user";
     setFacing(next);
-    await rec.start(next);
+    await rec.start(next, orientation);
   };
 
   const toggleRecord = () => {
