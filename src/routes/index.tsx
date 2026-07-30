@@ -300,8 +300,16 @@ function Index() {
           autoPlay
           onClick={() => setChromeVisible((v) => !v)}
           className="size-full object-cover"
-          style={{ transform: facing === "user" ? "scaleX(-1)" : undefined }}
+          style={{
+            transform: [
+              facing === "user" ? "scaleX(-1)" : "",
+              !rec.nativeZoom && rec.zoom > 1 ? `scale(${rec.zoom})` : "",
+            ]
+              .filter(Boolean)
+              .join(" "),
+          }}
         />
+
 
         <TeleprompterOverlay
           text={text}
@@ -331,7 +339,11 @@ function Index() {
             elapsed={rec.elapsed}
             onToggleRecord={toggleRecord}
             onExit={exitCamera}
+            zoom={rec.zoom}
+            maxZoom={rec.maxZoom}
+            onZoomChange={rec.setZoom}
           />
+
         </>
       )}
     </main>

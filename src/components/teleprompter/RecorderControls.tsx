@@ -12,6 +12,9 @@ type Props = {
   elapsed: number;
   onToggleRecord: () => void;
   onExit: () => void;
+  zoom: number;
+  maxZoom: number;
+  onZoomChange: (value: number) => void;
 };
 
 function fmt(s: number) {
@@ -67,6 +70,9 @@ export function RecorderControls({
   elapsed,
   onToggleRecord,
   onExit,
+  zoom,
+  maxZoom,
+  onZoomChange,
 }: Props) {
   return (
     <div className="pointer-events-auto absolute inset-x-0 bottom-0 space-y-4 bg-gradient-to-t from-background via-background/90 to-transparent px-4 pb-6 pt-8">
@@ -139,6 +145,21 @@ export function RecorderControls({
           />
         </label>
       </div>
+
+      <label className="block space-y-1.5">
+        <span className="flex items-baseline justify-between text-[10px] uppercase tracking-wide text-muted-foreground">
+          Zoom
+          <span className="tabular-nums">{zoom.toFixed(1)}x</span>
+        </span>
+        <Slider
+          value={[zoom]}
+          min={1}
+          max={maxZoom}
+          step={0.1}
+          onValueChange={([v]) => onZoomChange(v)}
+        />
+      </label>
+
 
       <div className="flex justify-center pt-1">
         <button

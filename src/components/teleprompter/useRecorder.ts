@@ -21,7 +21,11 @@ function pickMimeType() {
  * orientação escolhida, desenhamos os frames em um canvas com o tamanho alvo
  * (crop tipo "cover") e gravamos o canvas.
  */
-async function buildOrientedStream(source: MediaStream, orientation: Orientation) {
+async function buildOrientedStream(
+  source: MediaStream,
+  orientation: Orientation,
+  zoomRef: { current: number },
+) {
   const track = source.getVideoTracks()[0];
   if (!track) return { stream: source, stop: () => {} };
 
@@ -52,7 +56,8 @@ async function buildOrientedStream(source: MediaStream, orientation: Orientation
   let raf = 0;
   const draw = () => {
     if (ctx && video.videoWidth) {
-      const scale = Math.max(outW / video.videoWidth, outH / video.videoHeight);
+      const z = Math.max(1, zoomRef.current || 1);
+      const scale = Math.max(outW / video.videoWidth, outH / video.videoHeight) * z;
       const w = video.videoWidth * scale;
       const h = video.videoHeight * scale;
       ctx.drawImage(video, (outW - w) / 2, (outH - h) / 2, w, h);
@@ -81,6 +86,9 @@ export function useRecorder() {
   const [elapsed, setElapsed] = useState(0);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultExt, setResultExt] = useState("webm");
+  const [zoom, setZoomState] = useState(1);
+  const [maxZoom, setMaxZoom] = useState(4);
+  const [nativeZoom, setNativeZoom] = useState(false);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
@@ -88,6 +96,22 @@ export function useRecorder() {
   const orientationRef = useRef<Orientation>("vertical");
   const canvasStopRef = useRef<(() => void) | null>(null);
   const wakeLockRef = useRef<{ release: () => Promise<void> } | null>(null);
+  // fator de zoom digital aplicado no canvas (quando a câmera não tem zoom nativo)
+  const digitalZoomRef = useRef(1);
+  const nativeZoomRef = useRef(false);
+
+  const setZoom = useCallback((value: number) => {
+    setZoomState(value);
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (nativeZoomRef.current && track) {
+      digitalZoomRef.current = 1;
+      track
+        .applyConstraints({ advanced: [{ zoom: value }] } as unknown as MediaTrackConstraints)
+        .catch(() => {});
+    } else {
+      digitalZoomRef.current = value;
+    }
+  }, []);
 
   const stopStream = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -116,6 +140,15 @@ export function useRecorder() {
         });
         streamRef.current = s;
         setStream(s);
+
+        const track = s.getVideoTracks()[0];
+        const caps = (track?.getCapabilities?.() ?? {}) as { zoom?: { min: number; max: number } };
+        const hasNative = typeof caps.zoom?.max === "number" && caps.zoom.max > 1;
+        nativeZoomRef.current = hasNative;
+        setNativeZoom(hasNative);
+        setMaxZoom(hasNative ? Math.min(caps.zoom!.max, 8) : 4);
+        digitalZoomRef.current = 1;
+        setZoomState(1);
         return true;
       } catch (e) {
         const msg =
@@ -148,7 +181,7 @@ export function useRecorder() {
     }
     const mimeType = pickMimeType();
     try {
-      const oriented = await buildOrientedStream(s, orientationRef.current);
+      const oriented = await buildOrientedStream(s, orientationRef.current, digitalZoomRef);
       canvasStopRef.current = oriented.stop;
       const rec = new MediaRecorder(oriented.stream, mimeType ? { mimeType } : undefined);
       chunksRef.current = [];
@@ -213,5 +246,9 @@ export function useRecorder() {
     startRecording,
     stopRecording,
     clearResult,
+    zoom,
+    setZoom,
+    maxZoom,
+    nativeZoom,
   };
 }
