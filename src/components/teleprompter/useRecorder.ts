@@ -15,6 +15,65 @@ function pickMimeType() {
   return candidates.find((t) => MediaRecorder.isTypeSupported(t));
 }
 
+/**
+ * Muitos celulares entregam o vídeo sempre no sensor "deitado" (ex.: 1920x1080),
+ * ignorando as constraints de orientação. Para garantir o arquivo final na
+ * orientação escolhida, desenhamos os frames em um canvas com o tamanho alvo
+ * (crop tipo "cover") e gravamos o canvas.
+ */
+async function buildOrientedStream(source: MediaStream, orientation: Orientation) {
+  const track = source.getVideoTracks()[0];
+  if (!track) return { stream: source, stop: () => {} };
+
+  const video = document.createElement("video");
+  video.srcObject = new MediaStream([track]);
+  video.muted = true;
+  video.playsInline = true;
+  await video.play().catch(() => {});
+  await new Promise<void>((resolve) => {
+    if (video.videoWidth) return resolve();
+    video.onloadedmetadata = () => resolve();
+    window.setTimeout(resolve, 1500);
+  });
+
+  const srcW = video.videoWidth || 1280;
+  const srcH = video.videoHeight || 720;
+  const portrait = orientation === "vertical";
+  const long = Math.max(srcW, srcH);
+  const short = Math.min(srcW, srcH);
+  const outW = portrait ? short : long;
+  const outH = portrait ? long : short;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = outW;
+  canvas.height = outH;
+  const ctx = canvas.getContext("2d");
+
+  let raf = 0;
+  const draw = () => {
+    if (ctx && video.videoWidth) {
+      const scale = Math.max(outW / video.videoWidth, outH / video.videoHeight);
+      const w = video.videoWidth * scale;
+      const h = video.videoHeight * scale;
+      ctx.drawImage(video, (outW - w) / 2, (outH - h) / 2, w, h);
+    }
+    raf = requestAnimationFrame(draw);
+  };
+  draw();
+
+  const canvasStream = canvas.captureStream(30);
+  source.getAudioTracks().forEach((t) => canvasStream.addTrack(t));
+
+  return {
+    stream: canvasStream,
+    stop: () => {
+      cancelAnimationFrame(raf);
+      canvasStream.getVideoTracks().forEach((t) => t.stop());
+      video.srcObject = null;
+    },
+  };
+}
+
 export function useRecorder() {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +85,8 @@ export function useRecorder() {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+  const orientationRef = useRef<Orientation>("vertical");
+  const canvasStopRef = useRef<(() => void) | null>(null);
   const wakeLockRef = useRef<{ release: () => Promise<void> } | null>(null);
 
   const stopStream = useCallback(() => {
@@ -42,6 +103,7 @@ export function useRecorder() {
           throw new Error("Este navegador não permite acessar a câmera.");
         }
         stopStream();
+        orientationRef.current = orientation;
         const portrait = orientation === "vertical";
         const s = await navigator.mediaDevices.getUserMedia({
           video: {
@@ -86,13 +148,17 @@ export function useRecorder() {
     }
     const mimeType = pickMimeType();
     try {
-      const rec = new MediaRecorder(s, mimeType ? { mimeType } : undefined);
+      const oriented = await buildOrientedStream(s, orientationRef.current);
+      canvasStopRef.current = oriented.stop;
+      const rec = new MediaRecorder(oriented.stream, mimeType ? { mimeType } : undefined);
       chunksRef.current = [];
       rec.ondataavailable = (ev) => {
         if (ev.data.size > 0) chunksRef.current.push(ev.data);
       };
       rec.onstop = () => {
         const type = rec.mimeType || mimeType || "video/webm";
+        canvasStopRef.current?.();
+        canvasStopRef.current = null;
         const blob = new Blob(chunksRef.current, { type });
         setResultExt(type.includes("mp4") ? "mp4" : "webm");
         setResultUrl((prev) => {
