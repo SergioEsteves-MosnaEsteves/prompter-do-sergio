@@ -57,9 +57,12 @@ function Index() {
   const [scrolling, setScrolling] = useState(false);
   const [resetKey, setResetKey] = useState(0);
   const [chromeVisible, setChromeVisible] = useState(true);
+  const [opening, setOpening] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
   const rec = useRecorder();
+
 
   useEffect(() => {
     if (videoRef.current && rec.stream) {
