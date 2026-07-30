@@ -172,6 +172,7 @@ export function useRecorder() {
   const start = useCallback(
     async (facing: Facing, orientation: Orientation = "vertical") => {
       setError(null);
+      setErrorKind(null);
       try {
         if (!navigator.mediaDevices?.getUserMedia) {
           throw new Error("Este navegador não permite acessar a câmera.");
@@ -180,12 +181,20 @@ export function useRecorder() {
         orientationRef.current = orientation;
         // Não forçamos aspectRatio: pedir 9:16 faz o iPhone cortar as laterais
         // do sensor (parece "zoom"). O enquadramento é feito depois no canvas.
+        // facingMode como preferência: no desktop não existe câmera traseira.
         const baseVideo: MediaTrackConstraints = {
-          facingMode: facing,
+          facingMode: { ideal: facing },
           width: { ideal: 1920 },
           height: { ideal: 1080 },
         };
-        let s = await navigator.mediaDevices.getUserMedia({ video: baseVideo, audio: true });
+        let s: MediaStream;
+        try {
+          s = await navigator.mediaDevices.getUserMedia({ video: baseVideo, audio: true });
+        } catch (first) {
+          // Última tentativa sem nenhuma restrição de lente/resolução.
+          if (first instanceof DOMException && NO_RETRY_ERRORS.includes(first.name)) throw first;
+          s = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        }
 
         // Depois da permissão os labels ficam visíveis: tenta trocar para a lente mais aberta.
         const currentLabel = s.getVideoTracks()[0]?.label;
@@ -206,6 +215,7 @@ export function useRecorder() {
         streamRef.current = s;
         mirrorRef.current = facing === "user";
 
+        void countCameras().then(setCameraCount);
 
         const track = s.getVideoTracks()[0];
         const caps = (track?.getCapabilities?.() ?? {}) as { zoom?: { min: number; max: number } };
@@ -236,20 +246,16 @@ export function useRecorder() {
         if (oriented.aspect) setAspect(oriented.aspect);
         setStream(oriented.stream);
         return true;
-
       } catch (e) {
-        const msg =
-          e instanceof DOMException && (e.name === "NotAllowedError" || e.name === "SecurityError")
-            ? "Permissão de câmera/microfone negada. Libere o acesso nas configurações do navegador."
-            : e instanceof Error
-              ? e.message
-              : "Não foi possível abrir a câmera.";
-        setError(msg);
+        const { kind, message } = describeCameraError(e);
+        setErrorKind(kind);
+        setError(message);
         return false;
       }
     },
     [stopStream],
   );
+
 
 
   useEffect(() => {
