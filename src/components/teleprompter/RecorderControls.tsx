@@ -146,6 +146,21 @@ export function RecorderControls({
         </label>
       </div>
 
+      <label className="block space-y-1.5">
+        <span className="flex items-baseline justify-between text-[10px] uppercase tracking-wide text-muted-foreground">
+          Zoom
+          <span className="tabular-nums">{zoom.toFixed(1)}x</span>
+        </span>
+        <Slider
+          value={[zoom]}
+          min={1}
+          max={maxZoom}
+          step={0.1}
+          onValueChange={([v]) => onZoomChange(v)}
+        />
+      </label>
+
+
       <div className="flex justify-center pt-1">
         <button
           type="button"
