@@ -261,30 +261,22 @@ export function useRecorder() {
   }, [recording]);
 
   const startRecording = useCallback(async () => {
-    const s = streamRef.current;
-    if (!s) return;
+    const out = outputRef.current;
+    if (!out) return;
     if (typeof MediaRecorder === "undefined") {
       setError("Este navegador não suporta gravação de vídeo.");
       return;
     }
     const mimeType = pickMimeType();
     try {
-      const oriented = await buildOrientedStream(
-        s,
-        orientationRef.current,
-        digitalZoomRef,
-        fitRef.current,
-      );
-      canvasStopRef.current = oriented.stop;
-      const rec = new MediaRecorder(oriented.stream, mimeType ? { mimeType } : undefined);
+      // Grava exatamente o stream mostrado na prévia.
+      const rec = new MediaRecorder(out, mimeType ? { mimeType } : undefined);
       chunksRef.current = [];
       rec.ondataavailable = (ev) => {
         if (ev.data.size > 0) chunksRef.current.push(ev.data);
       };
       rec.onstop = () => {
         const type = rec.mimeType || mimeType || "video/webm";
-        canvasStopRef.current?.();
-        canvasStopRef.current = null;
         const blob = new Blob(chunksRef.current, { type });
         setResultExt(type.includes("mp4") ? "mp4" : "webm");
         setResultUrl((prev) => {
@@ -292,6 +284,7 @@ export function useRecorder() {
           return URL.createObjectURL(blob);
         });
       };
+
       recorderRef.current = rec;
       rec.start(1000);
       setRecording(true);
