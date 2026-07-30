@@ -284,23 +284,32 @@ function Index() {
   }
 
   return (
-    <main className="fixed inset-0 overflow-hidden bg-black">
-      <video
-        ref={videoRef}
-        muted
-        playsInline
-        autoPlay
-        onClick={() => setChromeVisible((v) => !v)}
-        className="size-full object-cover"
-        style={{ transform: facing === "user" ? "scaleX(-1)" : undefined }}
-      />
+    <main className="fixed inset-0 flex items-center justify-center overflow-hidden bg-black">
+      <div
+        className="relative w-full overflow-hidden"
+        style={
+          orientation === "horizontal"
+            ? { aspectRatio: "16 / 9", maxHeight: "100%" }
+            : { height: "100%" }
+        }
+      >
+        <video
+          ref={videoRef}
+          muted
+          playsInline
+          autoPlay
+          onClick={() => setChromeVisible((v) => !v)}
+          className="size-full object-cover"
+          style={{ transform: facing === "user" ? "scaleX(-1)" : undefined }}
+        />
 
-      <TeleprompterOverlay
-        text={text}
-        settings={settings}
-        scrolling={scrolling}
-        resetKey={resetKey}
-      />
+        <TeleprompterOverlay
+          text={text}
+          settings={settings}
+          scrolling={scrolling}
+          resetKey={resetKey}
+        />
+      </div>
 
       {chromeVisible && (
         <>
