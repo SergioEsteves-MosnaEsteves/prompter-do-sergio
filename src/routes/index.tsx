@@ -339,7 +339,11 @@ function Index() {
             elapsed={rec.elapsed}
             onToggleRecord={toggleRecord}
             onExit={exitCamera}
+            zoom={rec.zoom}
+            maxZoom={rec.maxZoom}
+            onZoomChange={rec.setZoom}
           />
+
         </>
       )}
     </main>
