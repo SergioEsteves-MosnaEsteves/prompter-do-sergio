@@ -342,6 +342,8 @@ function Index() {
             zoom={rec.zoom}
             maxZoom={rec.maxZoom}
             onZoomChange={rec.setZoom}
+            fit={rec.fit}
+            onFitChange={rec.setFit}
           />
 
         </>
