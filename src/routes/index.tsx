@@ -134,11 +134,8 @@ function Index() {
           </p>
         </header>
 
-        {rec.error && (
-          <div className="mb-5 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-foreground">
-            {rec.error}
-          </div>
-        )}
+
+
 
         <section className="space-y-6">
           <div className="space-y-2">
