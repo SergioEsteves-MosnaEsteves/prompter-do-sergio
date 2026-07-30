@@ -130,10 +130,12 @@ async function buildOrientedStream(
   const srcW = video.videoWidth || 1280;
   const srcH = video.videoHeight || 720;
   const portrait = orientation === "vertical";
-  const long = Math.max(srcW, srcH);
-  const short = Math.min(srcW, srcH);
-  const outW = portrait ? short : long;
-  const outH = portrait ? long : short;
+  // Proporção alvo fixa: não depende do sensor (webcams 4:3 dariam 3:4).
+  const longSide = Math.min(1920, Math.max(srcW, srcH));
+  const even = (n: number) => Math.max(2, Math.round(n) & ~1);
+  const outW = portrait ? even((longSide * 9) / 16) : even(longSide);
+  const outH = portrait ? even(longSide) : even((longSide * 9) / 16);
+
 
   const canvas = document.createElement("canvas");
   canvas.width = outW;
