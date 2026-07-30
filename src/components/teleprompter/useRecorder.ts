@@ -246,5 +246,9 @@ export function useRecorder() {
     startRecording,
     stopRecording,
     clearResult,
+    zoom,
+    setZoom,
+    maxZoom,
+    nativeZoom,
   };
 }
