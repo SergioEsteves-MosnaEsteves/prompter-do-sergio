@@ -12,6 +12,9 @@ type Props = {
   elapsed: number;
   onToggleRecord: () => void;
   onExit: () => void;
+  zoom: number;
+  maxZoom: number;
+  onZoomChange: (value: number) => void;
 };
 
 function fmt(s: number) {
