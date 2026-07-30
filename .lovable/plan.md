@@ -1,37 +1,35 @@
-## Causa mais provável
+## O que acontece hoje
 
-Você está testando dentro do **preview do Lovable**, que roda o app num iframe. O navegador só libera câmera/microfone para um iframe quando ele declara a permissão (`allow="camera; microphone"`). Sem isso, a chamada de câmera é recusada pelo próprio navegador — por isso o botão parece não fazer nada.
+Confirmei em `src/components/teleprompter/useRecorder.ts` (função `buildOrientedStream`, linhas 130-141) que o tamanho da "tela" de gravação é derivado do sensor da webcam:
 
-Dois agravantes no código atual (confirmados em `src/routes/index.tsx` e `useRecorder.ts`):
+```
+outW = menor lado do sensor
+outH = maior lado do sensor
+```
 
-1. A mensagem de erro só aparece **no topo** da tela de configuração. Com o roteiro colado, o botão fica bem abaixo — o erro é exibido fora da área visível, dando a sensação de "nada acontece".
-2. Não há estado de carregamento no botão nem tratamento específico para o caso "bloqueado por política de permissão do iframe" (o navegador devolve `NotAllowedError`, com a mesma mensagem de permissão negada, sem explicar que o problema é o preview).
+Ou seja, o formato final é o do sensor invertido, não 9:16. Numa webcam 16:9 dá 1080x1920 (correto por acaso), mas numa webcam 4:3 — muito comum em notebooks — dá 720x960, que é 3:4: a janela abre mais "quadrada", não no corte 9:16 pedido.
 
-## Teste rápido (sem mudar nada)
+Além disso, no modo "Cabe tudo" (`contain`) a imagem entra inteira com tarjas pretas, o que também não parece um corte 9:16 real.
 
-Abra o app fora do preview, no endereço direto:
-`https://id-preview--8362e340-2233-4f0f-8bdb-c2bef8a6785d.lovable.app`
-Se a câmera abrir lá, está confirmado: é restrição do iframe do preview, não do app.
+## O que fazer
 
-## O que fazer no app
+**1. Proporção alvo fixa, independente da webcam**
+- No `buildOrientedStream`, calcular o canvas a partir da proporção escolhida, não do sensor: vertical = 9:16, horizontal = 16:9.
+- Dimensionar pelo lado disponível do sensor (ex.: altura 1080 → 608x1080 em 9:16; ou usar 1080x1920 quando o sensor permitir), arredondando para números pares para o codificador.
 
-**1. Feedback imediato ao clicar**
-- Botão "Iniciar gravação" entra em estado "Abrindo câmera..." enquanto aguarda a permissão, e volta ao normal em caso de falha.
-- A mensagem de erro passa a aparecer logo acima/abaixo do botão (além do topo) e a tela rola até ela, para nunca ficar escondida.
+**2. Abrir a prévia já com o corte**
+- Como a prévia usa o mesmo canvas da gravação, ela passa a mostrar imediatamente a moldura 9:16 assim que a câmera abre — sem precisar mexer em nada.
+- Iniciar em `cover` (já é o padrão) para que o quadro apareça preenchido e recortado, e não com tarjas.
 
-**2. Mensagens de erro específicas**
-- Detectar quando o app está rodando dentro de um iframe sem permissão e mostrar: "A câmera está bloqueada pela janela de prévia. Abra o app em uma aba separada para gravar." — com um link/botão que abre a aba nova.
-- Diferenciar os casos: permissão negada, nenhuma câmera encontrada (`NotFoundError`), câmera em uso por outro programa (`NotReadableError`, comum no Windows com Teams/Zoom abertos) e navegador sem suporte.
-
-**3. Câmera no desktop**
-- No computador não existe câmera "traseira": pedir `facingMode: "environment"` pode falhar. Passar a tratar `facingMode` como preferência (`ideal`) e, se falhar, tentar de novo sem restrição de lente.
-- Esconder o botão "Frontal/Traseira" quando só houver uma câmera disponível.
+**3. Contêiner da prévia no desktop**
+- Em `src/routes/index.tsx`, o contêiner já usa `aspectRatio: rec.aspect`; com o item 1 esse valor passa a ser exatamente 0.5625 no vertical, então a caixa preta lateral do desktop fica correta e centralizada.
 
 ## Detalhes técnicos
 
-- `src/components/teleprompter/useRecorder.ts`: mapear `e.name` (`NotAllowedError` + `document !== top` → mensagem de iframe; `NotFoundError`; `NotReadableError`; `OverconstrainedError` → retry sem `facingMode` exato). Trocar `facingMode: facing` por `{ ideal: facing }` e adicionar fallback de segunda tentativa com `video: true`.
-- `src/routes/index.tsx`: estado `opening` para o botão, bloco de erro próximo ao botão com `scrollIntoView`, e ação "Abrir em nova aba" quando o erro for de iframe.
+- `buildOrientedStream`: substituir `outW/outH` baseados em `short/long` por `targetRatio = orientation === "vertical" ? 9/16 : 16/9`, derivando `outH` do maior lado disponível (limitado a 1920) e `outW = round(outH * targetRatio)` (e o inverso no horizontal), com `& ~1` para paridade.
+- Retornar `aspect = outW / outH` (já existe) — passa a ser 9/16 exato.
+- Nenhuma mudança nas constraints do `getUserMedia`: continuamos pedindo o campo de visão mais amplo e recortando no canvas, para não reintroduzir o "zoom" do iPhone.
 
-## Limitação
+## Efeito colateral esperado
 
-Se o preview continuar bloqueando a câmera, a gravação sempre precisará ser feita no endereço aberto em aba própria (ou no site publicado). O app não pode conceder a si mesmo permissão dentro do iframe.
+Em webcams 4:3, o recorte 9:16 descarta bastante das laterais — é inerente ao formato vertical. O botão "Cabe tudo" continua disponível para ver a imagem inteira dentro do quadro 9:16.
