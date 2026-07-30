@@ -185,6 +185,9 @@ async function buildOrientedStream(
 export function useRecorder() {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorKind, setErrorKind] = useState<CameraErrorKind | null>(null);
+  const [cameraCount, setCameraCount] = useState(0);
+
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
