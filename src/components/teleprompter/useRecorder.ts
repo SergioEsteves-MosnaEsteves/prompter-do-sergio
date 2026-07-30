@@ -338,5 +338,7 @@ export function useRecorder() {
     nativeZoom,
     fit,
     setFit,
+    aspect,
   };
+
 }
