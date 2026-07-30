@@ -20,11 +20,11 @@ export const Route = createFileRoute("/")({
         content:
           "Grave vídeos pela câmera do celular com um teleprompter rolando na tela. Controle velocidade, fonte e opacidade e baixe o vídeo direto no aparelho.",
       },
-      { property: "og:title", content: "Prompter — Grave vídeos com teleprompter" },
+      { property: "og:title", content: "Prompter — Grave vídeos com teleprompter no celular" },
       {
         property: "og:description",
         content:
-          "Cole seu roteiro, ajuste a rolagem e grave olhando para a câmera. O vídeo é salvo direto no seu celular.",
+          "Grave vídeos pela câmera do celular com um teleprompter rolando na tela. Controle velocidade, fonte e opacidade e baixe o vídeo direto no aparelho.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
