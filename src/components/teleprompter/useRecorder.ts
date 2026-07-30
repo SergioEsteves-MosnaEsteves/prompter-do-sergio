@@ -43,7 +43,8 @@ async function buildOrientedStream(
   source: MediaStream,
   orientation: Orientation,
   zoomRef: { current: number },
-  fit: Fit,
+  fitRef: { current: Fit },
+  mirrorRef: { current: boolean },
 ) {
   const track = source.getVideoTracks()[0];
   if (!track) return { stream: source, stop: () => {} };
@@ -75,6 +76,7 @@ async function buildOrientedStream(
   let raf = 0;
   const draw = () => {
     if (ctx && video.videoWidth) {
+      const fit = fitRef.current;
       const z = Math.max(1, zoomRef.current || 1);
       const base =
         fit === "contain"
@@ -83,11 +85,15 @@ async function buildOrientedStream(
       const scale = base * z;
       const w = video.videoWidth * scale;
       const h = video.videoHeight * scale;
-      if (fit === "contain") {
-        ctx.fillStyle = "#000";
-        ctx.fillRect(0, 0, outW, outH);
+      ctx.save();
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, outW, outH);
+      if (mirrorRef.current) {
+        ctx.translate(outW, 0);
+        ctx.scale(-1, 1);
       }
       ctx.drawImage(video, (outW - w) / 2, (outH - h) / 2, w, h);
+      ctx.restore();
     }
     raf = requestAnimationFrame(draw);
   };
@@ -98,6 +104,7 @@ async function buildOrientedStream(
 
   return {
     stream: canvasStream,
+    aspect: outW / outH,
     stop: () => {
       cancelAnimationFrame(raf);
       canvasStream.getVideoTracks().forEach((t) => t.stop());
@@ -105,6 +112,7 @@ async function buildOrientedStream(
     },
   };
 }
+
 
 
 export function useRecorder() {
@@ -128,9 +136,12 @@ export function useRecorder() {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+  const outputRef = useRef<MediaStream | null>(null);
   const orientationRef = useRef<Orientation>("vertical");
   const canvasStopRef = useRef<(() => void) | null>(null);
   const wakeLockRef = useRef<{ release: () => Promise<void> } | null>(null);
+  const mirrorRef = useRef(false);
+  const [aspect, setAspect] = useState(9 / 16);
   // fator de zoom digital aplicado no canvas (quando a câmera não tem zoom nativo)
   const digitalZoomRef = useRef(1);
   const nativeZoomRef = useRef(false);
@@ -149,10 +160,14 @@ export function useRecorder() {
   }, []);
 
   const stopStream = useCallback(() => {
+    canvasStopRef.current?.();
+    canvasStopRef.current = null;
+    outputRef.current = null;
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     setStream(null);
   }, []);
+
 
   const start = useCallback(
     async (facing: Facing, orientation: Orientation = "vertical") => {
@@ -189,7 +204,8 @@ export function useRecorder() {
         }
 
         streamRef.current = s;
-        setStream(s);
+        mirrorRef.current = facing === "user";
+
 
         const track = s.getVideoTracks()[0];
         const caps = (track?.getCapabilities?.() ?? {}) as { zoom?: { min: number; max: number } };
@@ -206,7 +222,21 @@ export function useRecorder() {
         }
         digitalZoomRef.current = 1;
         setZoomState(1);
+
+        // A prévia usa exatamente o mesmo canvas que será gravado (1:1).
+        const oriented = await buildOrientedStream(
+          s,
+          orientation,
+          digitalZoomRef,
+          fitRef,
+          mirrorRef,
+        );
+        canvasStopRef.current = oriented.stop;
+        outputRef.current = oriented.stream;
+        if (oriented.aspect) setAspect(oriented.aspect);
+        setStream(oriented.stream);
         return true;
+
       } catch (e) {
         const msg =
           e instanceof DOMException && (e.name === "NotAllowedError" || e.name === "SecurityError")
@@ -231,30 +261,22 @@ export function useRecorder() {
   }, [recording]);
 
   const startRecording = useCallback(async () => {
-    const s = streamRef.current;
-    if (!s) return;
+    const out = outputRef.current;
+    if (!out) return;
     if (typeof MediaRecorder === "undefined") {
       setError("Este navegador não suporta gravação de vídeo.");
       return;
     }
     const mimeType = pickMimeType();
     try {
-      const oriented = await buildOrientedStream(
-        s,
-        orientationRef.current,
-        digitalZoomRef,
-        fitRef.current,
-      );
-      canvasStopRef.current = oriented.stop;
-      const rec = new MediaRecorder(oriented.stream, mimeType ? { mimeType } : undefined);
+      // Grava exatamente o stream mostrado na prévia.
+      const rec = new MediaRecorder(out, mimeType ? { mimeType } : undefined);
       chunksRef.current = [];
       rec.ondataavailable = (ev) => {
         if (ev.data.size > 0) chunksRef.current.push(ev.data);
       };
       rec.onstop = () => {
         const type = rec.mimeType || mimeType || "video/webm";
-        canvasStopRef.current?.();
-        canvasStopRef.current = null;
         const blob = new Blob(chunksRef.current, { type });
         setResultExt(type.includes("mp4") ? "mp4" : "webm");
         setResultUrl((prev) => {
@@ -262,6 +284,7 @@ export function useRecorder() {
           return URL.createObjectURL(blob);
         });
       };
+
       recorderRef.current = rec;
       rec.start(1000);
       setRecording(true);
@@ -315,5 +338,7 @@ export function useRecorder() {
     nativeZoom,
     fit,
     setFit,
+    aspect,
   };
+
 }

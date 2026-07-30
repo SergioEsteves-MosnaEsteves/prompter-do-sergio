@@ -286,12 +286,12 @@ function Index() {
   return (
     <main className="fixed inset-0 flex items-center justify-center overflow-hidden bg-black">
       <div
-        className="relative w-full overflow-hidden"
-        style={
-          orientation === "horizontal"
-            ? { aspectRatio: "16 / 9", maxHeight: "100%" }
-            : { height: "100%" }
-        }
+        className="relative max-h-full max-w-full overflow-hidden"
+        style={{
+          aspectRatio: `${rec.aspect}`,
+          height: orientation === "vertical" ? "100%" : undefined,
+          width: orientation === "vertical" ? undefined : "100%",
+        }}
       >
         <video
           ref={videoRef}
@@ -299,16 +299,9 @@ function Index() {
           playsInline
           autoPlay
           onClick={() => setChromeVisible((v) => !v)}
-          className={`size-full ${rec.fit === "contain" ? "object-contain" : "object-cover"}`}
-          style={{
-            transform: [
-              facing === "user" ? "scaleX(-1)" : "",
-              !rec.nativeZoom && rec.zoom > 1 ? `scale(${rec.zoom})` : "",
-            ]
-              .filter(Boolean)
-              .join(" "),
-          }}
+          className="size-full object-contain"
         />
+
 
 
         <TeleprompterOverlay
