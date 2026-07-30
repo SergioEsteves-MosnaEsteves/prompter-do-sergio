@@ -299,7 +299,7 @@ function Index() {
           playsInline
           autoPlay
           onClick={() => setChromeVisible((v) => !v)}
-          className="size-full object-cover"
+          className={`size-full ${rec.fit === "contain" ? "object-contain" : "object-cover"}`}
           style={{
             transform: [
               facing === "user" ? "scaleX(-1)" : "",
