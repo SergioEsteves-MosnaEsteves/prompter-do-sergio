@@ -232,7 +232,12 @@ export function useRecorder() {
     }
     const mimeType = pickMimeType();
     try {
-      const oriented = await buildOrientedStream(s, orientationRef.current, digitalZoomRef);
+      const oriented = await buildOrientedStream(
+        s,
+        orientationRef.current,
+        digitalZoomRef,
+        fitRef.current,
+      );
       canvasStopRef.current = oriented.stop;
       const rec = new MediaRecorder(oriented.stream, mimeType ? { mimeType } : undefined);
       chunksRef.current = [];
