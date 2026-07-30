@@ -43,7 +43,8 @@ async function buildOrientedStream(
   source: MediaStream,
   orientation: Orientation,
   zoomRef: { current: number },
-  fit: Fit,
+  fitRef: { current: Fit },
+  mirrorRef: { current: boolean },
 ) {
   const track = source.getVideoTracks()[0];
   if (!track) return { stream: source, stop: () => {} };
@@ -75,6 +76,7 @@ async function buildOrientedStream(
   let raf = 0;
   const draw = () => {
     if (ctx && video.videoWidth) {
+      const fit = fitRef.current;
       const z = Math.max(1, zoomRef.current || 1);
       const base =
         fit === "contain"
@@ -83,11 +85,15 @@ async function buildOrientedStream(
       const scale = base * z;
       const w = video.videoWidth * scale;
       const h = video.videoHeight * scale;
-      if (fit === "contain") {
-        ctx.fillStyle = "#000";
-        ctx.fillRect(0, 0, outW, outH);
+      ctx.save();
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, outW, outH);
+      if (mirrorRef.current) {
+        ctx.translate(outW, 0);
+        ctx.scale(-1, 1);
       }
       ctx.drawImage(video, (outW - w) / 2, (outH - h) / 2, w, h);
+      ctx.restore();
     }
     raf = requestAnimationFrame(draw);
   };
@@ -98,6 +104,7 @@ async function buildOrientedStream(
 
   return {
     stream: canvasStream,
+    aspect: outW / outH,
     stop: () => {
       cancelAnimationFrame(raf);
       canvasStream.getVideoTracks().forEach((t) => t.stop());
@@ -105,6 +112,7 @@ async function buildOrientedStream(
     },
   };
 }
+
 
 
 export function useRecorder() {
