@@ -393,7 +393,12 @@ export function useRecorder() {
     });
   }, []);
 
+  useEffect(() => {
+    void countCameras().then(setCameraCount);
+  }, []);
+
   useEffect(() => () => stopStream(), [stopStream]);
+
 
   return {
     stream,
