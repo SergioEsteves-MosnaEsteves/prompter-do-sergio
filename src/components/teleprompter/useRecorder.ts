@@ -21,7 +21,11 @@ function pickMimeType() {
  * orientação escolhida, desenhamos os frames em um canvas com o tamanho alvo
  * (crop tipo "cover") e gravamos o canvas.
  */
-async function buildOrientedStream(source: MediaStream, orientation: Orientation) {
+async function buildOrientedStream(
+  source: MediaStream,
+  orientation: Orientation,
+  zoomRef: { current: number },
+) {
   const track = source.getVideoTracks()[0];
   if (!track) return { stream: source, stop: () => {} };
 
