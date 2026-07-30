@@ -398,7 +398,10 @@ export function useRecorder() {
   return {
     stream,
     error,
+    errorKind,
+    cameraCount,
     setError,
+
     recording,
     elapsed,
     resultUrl,
