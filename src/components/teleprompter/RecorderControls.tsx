@@ -1,6 +1,7 @@
 import { Minus, Pause, Play, Plus, RotateCcw } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import type { PrompterSettings } from "./TeleprompterOverlay";
+import type { Fit } from "./useRecorder";
 
 type Props = {
   settings: PrompterSettings;
@@ -15,6 +16,8 @@ type Props = {
   zoom: number;
   maxZoom: number;
   onZoomChange: (value: number) => void;
+  fit: Fit;
+  onFitChange: (value: Fit) => void;
 };
 
 function fmt(s: number) {
