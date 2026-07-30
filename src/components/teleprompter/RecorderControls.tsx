@@ -165,6 +165,28 @@ export function RecorderControls({
         />
       </label>
 
+      <div className="space-y-1.5">
+        <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+          Enquadramento
+        </span>
+        <div className="grid grid-cols-2 gap-2">
+          {(["cover", "contain"] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => onFitChange(mode)}
+              className={`rounded-full px-3 py-2 text-xs font-medium ${
+                fit === mode
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground"
+              }`}
+            >
+              {mode === "cover" ? "Preencher" : "Cabe tudo"}
+            </button>
+          ))}
+        </div>
+      </div>
+
 
       <div className="flex justify-center pt-1">
         <button
