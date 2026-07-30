@@ -3,7 +3,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Camera,
   Download,
+  ExternalLink,
   RectangleHorizontal,
+
   RectangleVertical,
   RefreshCw,
   SwitchCamera,
