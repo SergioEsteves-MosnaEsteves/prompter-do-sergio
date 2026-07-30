@@ -106,7 +106,7 @@ export function useRecorder() {
     if (nativeZoomRef.current && track) {
       digitalZoomRef.current = 1;
       track
-        .applyConstraints({ advanced: [{ zoom: value }] } as MediaTrackConstraints)
+        .applyConstraints({ advanced: [{ zoom: value }] } as unknown as MediaTrackConstraints)
         .catch(() => {});
     } else {
       digitalZoomRef.current = value;
