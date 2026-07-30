@@ -218,28 +218,51 @@ function Index() {
             )}
           </div>
 
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              className="flex-1"
-              onClick={() => setFacing(facing === "user" ? "environment" : "user")}
+          {rec.cameraCount !== 1 && (
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                className="flex-1"
+                onClick={() => setFacing(facing === "user" ? "environment" : "user")}
+              >
+                <SwitchCamera className="mr-2 size-4" />
+                {facing === "user" ? "Frontal" : "Traseira"}
+              </Button>
+            </div>
+          )}
+
+          {rec.error && (
+            <div
+              ref={errorRef}
+              className="space-y-3 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-foreground"
             >
-              <SwitchCamera className="mr-2 size-4" />
-              {facing === "user" ? "Frontal" : "Traseira"}
-            </Button>
-          </div>
+              <p>{rec.error}</p>
+              {rec.errorKind === "iframe" && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => window.open(window.location.href, "_blank", "noopener")}
+                >
+                  <ExternalLink className="mr-2 size-4" />
+                  Abrir em nova aba
+                </Button>
+              )}
+            </div>
+          )}
 
           <Button
             type="button"
             size="lg"
             className="w-full"
-            disabled={text.trim().length === 0}
+            disabled={text.trim().length === 0 || opening}
             onClick={() => openCamera()}
           >
             <Camera className="mr-2 size-5" />
-            Iniciar gravação
+            {opening ? "Abrindo câmera..." : "Iniciar gravação"}
           </Button>
+
           <p className="text-center text-xs text-muted-foreground">
             O teleprompter aparece só na sua tela — ele não fica gravado no vídeo.
           </p>
