@@ -136,9 +136,12 @@ export function useRecorder() {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+  const outputRef = useRef<MediaStream | null>(null);
   const orientationRef = useRef<Orientation>("vertical");
   const canvasStopRef = useRef<(() => void) | null>(null);
   const wakeLockRef = useRef<{ release: () => Promise<void> } | null>(null);
+  const mirrorRef = useRef(false);
+  const [aspect, setAspect] = useState(9 / 16);
   // fator de zoom digital aplicado no canvas (quando a câmera não tem zoom nativo)
   const digitalZoomRef = useRef(1);
   const nativeZoomRef = useRef(false);
@@ -157,10 +160,14 @@ export function useRecorder() {
   }, []);
 
   const stopStream = useCallback(() => {
+    canvasStopRef.current?.();
+    canvasStopRef.current = null;
+    outputRef.current = null;
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     setStream(null);
   }, []);
+
 
   const start = useCallback(
     async (facing: Facing, orientation: Orientation = "vertical") => {
