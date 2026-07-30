@@ -204,7 +204,8 @@ export function useRecorder() {
         }
 
         streamRef.current = s;
-        setStream(s);
+        mirrorRef.current = facing === "user";
+
 
         const track = s.getVideoTracks()[0];
         const caps = (track?.getCapabilities?.() ?? {}) as { zoom?: { min: number; max: number } };
