@@ -86,6 +86,9 @@ export function useRecorder() {
   const [elapsed, setElapsed] = useState(0);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultExt, setResultExt] = useState("webm");
+  const [zoom, setZoomState] = useState(1);
+  const [maxZoom, setMaxZoom] = useState(4);
+  const [nativeZoom, setNativeZoom] = useState(false);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
@@ -93,6 +96,22 @@ export function useRecorder() {
   const orientationRef = useRef<Orientation>("vertical");
   const canvasStopRef = useRef<(() => void) | null>(null);
   const wakeLockRef = useRef<{ release: () => Promise<void> } | null>(null);
+  // fator de zoom digital aplicado no canvas (quando a câmera não tem zoom nativo)
+  const digitalZoomRef = useRef(1);
+  const nativeZoomRef = useRef(false);
+
+  const setZoom = useCallback((value: number) => {
+    setZoomState(value);
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (nativeZoomRef.current && track) {
+      digitalZoomRef.current = 1;
+      track
+        .applyConstraints({ advanced: [{ zoom: value }] } as MediaTrackConstraints)
+        .catch(() => {});
+    } else {
+      digitalZoomRef.current = value;
+    }
+  }, []);
 
   const stopStream = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
