@@ -3,6 +3,73 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export type Facing = "user" | "environment";
 export type Orientation = "vertical" | "horizontal";
 export type Fit = "cover" | "contain";
+/** Categoria do erro, para a UI mostrar a ação certa. */
+export type CameraErrorKind =
+  | "iframe"
+  | "denied"
+  | "notfound"
+  | "busy"
+  | "unsupported"
+  | "unknown";
+
+const NO_RETRY_ERRORS = ["NotAllowedError", "SecurityError", "NotFoundError", "NotReadableError"];
+
+function isInsideIframe() {
+  try {
+    return typeof window !== "undefined" && window.self !== window.top;
+  } catch {
+    return true;
+  }
+}
+
+function describeCameraError(e: unknown): { kind: CameraErrorKind; message: string } {
+  const name = e instanceof DOMException ? e.name : "";
+  if (name === "NotAllowedError" || name === "SecurityError") {
+    if (isInsideIframe()) {
+      return {
+        kind: "iframe",
+        message:
+          "A câmera está bloqueada pela janela de prévia. Abra o app em uma aba separada para gravar.",
+      };
+    }
+    return {
+      kind: "denied",
+      message:
+        "Permissão de câmera/microfone negada. Libere o acesso nas configurações do navegador e recarregue a página.",
+    };
+  }
+  if (name === "NotFoundError" || name === "OverconstrainedError") {
+    return {
+      kind: "notfound",
+      message: "Nenhuma câmera foi encontrada neste computador.",
+    };
+  }
+  if (name === "NotReadableError" || name === "AbortError") {
+    return {
+      kind: "busy",
+      message:
+        "A câmera está sendo usada por outro programa (Zoom, Teams, Meet...). Feche-o e tente de novo.",
+    };
+  }
+  if (e instanceof Error && /não permite acessar a câmera/.test(e.message)) {
+    return { kind: "unsupported", message: e.message };
+  }
+  return {
+    kind: "unknown",
+    message: e instanceof Error ? e.message : "Não foi possível abrir a câmera.",
+  };
+}
+
+/** Quantas câmeras o dispositivo tem (para esconder o botão de trocar lente no desktop). */
+async function countCameras() {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices.filter((d) => d.kind === "videoinput").length;
+  } catch {
+    return 0;
+  }
+}
+
 
 function pickMimeType() {
   if (typeof MediaRecorder === "undefined") return undefined;
