@@ -313,5 +313,7 @@ export function useRecorder() {
     setZoom,
     maxZoom,
     nativeZoom,
+    fit,
+    setFit,
   };
 }
