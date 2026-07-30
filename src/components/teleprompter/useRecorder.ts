@@ -117,6 +117,13 @@ export function useRecorder() {
   const [zoom, setZoomState] = useState(1);
   const [maxZoom, setMaxZoom] = useState(4);
   const [nativeZoom, setNativeZoom] = useState(false);
+  const [fit, setFitState] = useState<Fit>("cover");
+  const fitRef = useRef<Fit>("cover");
+
+  const setFit = useCallback((value: Fit) => {
+    fitRef.current = value;
+    setFitState(value);
+  }, []);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
