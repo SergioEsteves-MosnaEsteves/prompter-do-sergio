@@ -156,16 +156,31 @@ export function useRecorder() {
         }
         stopStream();
         orientationRef.current = orientation;
-        const portrait = orientation === "vertical";
-        const s = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: facing,
-            width: { ideal: portrait ? 1080 : 1920 },
-            height: { ideal: portrait ? 1920 : 1080 },
-            aspectRatio: { ideal: portrait ? 9 / 16 : 16 / 9 },
-          },
-          audio: true,
-        });
+        // Não forçamos aspectRatio: pedir 9:16 faz o iPhone cortar as laterais
+        // do sensor (parece "zoom"). O enquadramento é feito depois no canvas.
+        const baseVideo: MediaTrackConstraints = {
+          facingMode: facing,
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        };
+        let s = await navigator.mediaDevices.getUserMedia({ video: baseVideo, audio: true });
+
+        // Depois da permissão os labels ficam visíveis: tenta trocar para a lente mais aberta.
+        const currentLabel = s.getVideoTracks()[0]?.label;
+        const wideId = await findWidestDeviceId(facing, currentLabel);
+        if (wideId) {
+          try {
+            const wideStream = await navigator.mediaDevices.getUserMedia({
+              video: { ...baseVideo, deviceId: { exact: wideId } },
+              audio: true,
+            });
+            s.getTracks().forEach((t) => t.stop());
+            s = wideStream;
+          } catch {
+            /* mantém o stream original */
+          }
+        }
+
         streamRef.current = s;
         setStream(s);
 
@@ -175,6 +190,13 @@ export function useRecorder() {
         nativeZoomRef.current = hasNative;
         setNativeZoom(hasNative);
         setMaxZoom(hasNative ? Math.min(caps.zoom!.max, 8) : 4);
+        // Garante que a câmera abra no campo de visão mais amplo possível.
+        if (hasNative) {
+          const min = typeof caps.zoom?.min === "number" ? caps.zoom.min : 1;
+          track
+            ?.applyConstraints({ advanced: [{ zoom: min }] } as unknown as MediaTrackConstraints)
+            .catch(() => {});
+        }
         digitalZoomRef.current = 1;
         setZoomState(1);
         return true;
@@ -191,6 +213,7 @@ export function useRecorder() {
     },
     [stopStream],
   );
+
 
   useEffect(() => {
     if (!recording) return;
