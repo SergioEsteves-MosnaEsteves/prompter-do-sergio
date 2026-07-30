@@ -1,6 +1,7 @@
 import { Minus, Pause, Play, Plus, RotateCcw } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import type { PrompterSettings } from "./TeleprompterOverlay";
+import type { Fit } from "./useRecorder";
 
 type Props = {
   settings: PrompterSettings;
@@ -15,6 +16,8 @@ type Props = {
   zoom: number;
   maxZoom: number;
   onZoomChange: (value: number) => void;
+  fit: Fit;
+  onFitChange: (value: Fit) => void;
 };
 
 function fmt(s: number) {
@@ -73,6 +76,8 @@ export function RecorderControls({
   zoom,
   maxZoom,
   onZoomChange,
+  fit,
+  onFitChange,
 }: Props) {
   return (
     <div className="pointer-events-auto absolute inset-x-0 bottom-0 space-y-4 bg-gradient-to-t from-background via-background/90 to-transparent px-4 pb-6 pt-8">
@@ -159,6 +164,28 @@ export function RecorderControls({
           onValueChange={([v]) => onZoomChange(v)}
         />
       </label>
+
+      <div className="space-y-1.5">
+        <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+          Enquadramento
+        </span>
+        <div className="grid grid-cols-2 gap-2">
+          {(["cover", "contain"] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => onFitChange(mode)}
+              className={`rounded-full px-3 py-2 text-xs font-medium ${
+                fit === mode
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground"
+              }`}
+            >
+              {mode === "cover" ? "Preencher" : "Cabe tudo"}
+            </button>
+          ))}
+        </div>
+      </div>
 
 
       <div className="flex justify-center pt-1">

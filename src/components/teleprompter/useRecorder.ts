@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 export type Facing = "user" | "environment";
 export type Orientation = "vertical" | "horizontal";
+export type Fit = "cover" | "contain";
 
 function pickMimeType() {
   if (typeof MediaRecorder === "undefined") return undefined;
@@ -15,16 +16,34 @@ function pickMimeType() {
   return candidates.find((t) => MediaRecorder.isTypeSupported(t));
 }
 
+/** Procura a lente mais aberta (ultra-wide) disponível para a direção pedida. */
+async function findWidestDeviceId(facing: Facing, currentLabel?: string) {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const cams = devices.filter((d) => d.kind === "videoinput");
+    if (cams.length < 2) return undefined;
+    const wanted = facing === "user" ? /front|frontal/i : /back|rear|tras/i;
+    const side = cams.filter((d) => wanted.test(d.label));
+    const pool = side.length ? side : cams;
+    const ultra = pool.find((d) => /ultra|wide angle|grande angular|0\.5/i.test(d.label));
+    if (ultra && ultra.label !== currentLabel) return ultra.deviceId;
+    return undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * Muitos celulares entregam o vídeo sempre no sensor "deitado" (ex.: 1920x1080),
  * ignorando as constraints de orientação. Para garantir o arquivo final na
  * orientação escolhida, desenhamos os frames em um canvas com o tamanho alvo
- * (crop tipo "cover") e gravamos o canvas.
+ * e gravamos o canvas (recorte "cover" ou imagem inteira "contain").
  */
 async function buildOrientedStream(
   source: MediaStream,
   orientation: Orientation,
   zoomRef: { current: number },
+  fit: Fit,
 ) {
   const track = source.getVideoTracks()[0];
   if (!track) return { stream: source, stop: () => {} };
@@ -57,9 +76,17 @@ async function buildOrientedStream(
   const draw = () => {
     if (ctx && video.videoWidth) {
       const z = Math.max(1, zoomRef.current || 1);
-      const scale = Math.max(outW / video.videoWidth, outH / video.videoHeight) * z;
+      const base =
+        fit === "contain"
+          ? Math.min(outW / video.videoWidth, outH / video.videoHeight)
+          : Math.max(outW / video.videoWidth, outH / video.videoHeight);
+      const scale = base * z;
       const w = video.videoWidth * scale;
       const h = video.videoHeight * scale;
+      if (fit === "contain") {
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, outW, outH);
+      }
       ctx.drawImage(video, (outW - w) / 2, (outH - h) / 2, w, h);
     }
     raf = requestAnimationFrame(draw);
@@ -79,6 +106,7 @@ async function buildOrientedStream(
   };
 }
 
+
 export function useRecorder() {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -89,6 +117,13 @@ export function useRecorder() {
   const [zoom, setZoomState] = useState(1);
   const [maxZoom, setMaxZoom] = useState(4);
   const [nativeZoom, setNativeZoom] = useState(false);
+  const [fit, setFitState] = useState<Fit>("cover");
+  const fitRef = useRef<Fit>("cover");
+
+  const setFit = useCallback((value: Fit) => {
+    fitRef.current = value;
+    setFitState(value);
+  }, []);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
@@ -128,16 +163,31 @@ export function useRecorder() {
         }
         stopStream();
         orientationRef.current = orientation;
-        const portrait = orientation === "vertical";
-        const s = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: facing,
-            width: { ideal: portrait ? 1080 : 1920 },
-            height: { ideal: portrait ? 1920 : 1080 },
-            aspectRatio: { ideal: portrait ? 9 / 16 : 16 / 9 },
-          },
-          audio: true,
-        });
+        // Não forçamos aspectRatio: pedir 9:16 faz o iPhone cortar as laterais
+        // do sensor (parece "zoom"). O enquadramento é feito depois no canvas.
+        const baseVideo: MediaTrackConstraints = {
+          facingMode: facing,
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        };
+        let s = await navigator.mediaDevices.getUserMedia({ video: baseVideo, audio: true });
+
+        // Depois da permissão os labels ficam visíveis: tenta trocar para a lente mais aberta.
+        const currentLabel = s.getVideoTracks()[0]?.label;
+        const wideId = await findWidestDeviceId(facing, currentLabel);
+        if (wideId) {
+          try {
+            const wideStream = await navigator.mediaDevices.getUserMedia({
+              video: { ...baseVideo, deviceId: { exact: wideId } },
+              audio: true,
+            });
+            s.getTracks().forEach((t) => t.stop());
+            s = wideStream;
+          } catch {
+            /* mantém o stream original */
+          }
+        }
+
         streamRef.current = s;
         setStream(s);
 
@@ -147,6 +197,13 @@ export function useRecorder() {
         nativeZoomRef.current = hasNative;
         setNativeZoom(hasNative);
         setMaxZoom(hasNative ? Math.min(caps.zoom!.max, 8) : 4);
+        // Garante que a câmera abra no campo de visão mais amplo possível.
+        if (hasNative) {
+          const min = typeof caps.zoom?.min === "number" ? caps.zoom.min : 1;
+          track
+            ?.applyConstraints({ advanced: [{ zoom: min }] } as unknown as MediaTrackConstraints)
+            .catch(() => {});
+        }
         digitalZoomRef.current = 1;
         setZoomState(1);
         return true;
@@ -163,6 +220,7 @@ export function useRecorder() {
     },
     [stopStream],
   );
+
 
   useEffect(() => {
     if (!recording) return;
@@ -181,7 +239,12 @@ export function useRecorder() {
     }
     const mimeType = pickMimeType();
     try {
-      const oriented = await buildOrientedStream(s, orientationRef.current, digitalZoomRef);
+      const oriented = await buildOrientedStream(
+        s,
+        orientationRef.current,
+        digitalZoomRef,
+        fitRef.current,
+      );
       canvasStopRef.current = oriented.stop;
       const rec = new MediaRecorder(oriented.stream, mimeType ? { mimeType } : undefined);
       chunksRef.current = [];
@@ -250,5 +313,7 @@ export function useRecorder() {
     setZoom,
     maxZoom,
     nativeZoom,
+    fit,
+    setFit,
   };
 }
