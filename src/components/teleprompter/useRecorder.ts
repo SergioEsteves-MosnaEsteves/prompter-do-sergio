@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 export type Facing = "user" | "environment";
 export type Orientation = "vertical" | "horizontal";
+export type Fit = "cover" | "contain";
 
 function pickMimeType() {
   if (typeof MediaRecorder === "undefined") return undefined;
@@ -15,16 +16,34 @@ function pickMimeType() {
   return candidates.find((t) => MediaRecorder.isTypeSupported(t));
 }
 
+/** Procura a lente mais aberta (ultra-wide) disponível para a direção pedida. */
+async function findWidestDeviceId(facing: Facing, currentLabel?: string) {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const cams = devices.filter((d) => d.kind === "videoinput");
+    if (cams.length < 2) return undefined;
+    const wanted = facing === "user" ? /front|frontal/i : /back|rear|tras/i;
+    const side = cams.filter((d) => wanted.test(d.label));
+    const pool = side.length ? side : cams;
+    const ultra = pool.find((d) => /ultra|wide angle|grande angular|0\.5/i.test(d.label));
+    if (ultra && ultra.label !== currentLabel) return ultra.deviceId;
+    return undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * Muitos celulares entregam o vídeo sempre no sensor "deitado" (ex.: 1920x1080),
  * ignorando as constraints de orientação. Para garantir o arquivo final na
  * orientação escolhida, desenhamos os frames em um canvas com o tamanho alvo
- * (crop tipo "cover") e gravamos o canvas.
+ * e gravamos o canvas (recorte "cover" ou imagem inteira "contain").
  */
 async function buildOrientedStream(
   source: MediaStream,
   orientation: Orientation,
   zoomRef: { current: number },
+  fit: Fit,
 ) {
   const track = source.getVideoTracks()[0];
   if (!track) return { stream: source, stop: () => {} };
@@ -57,9 +76,17 @@ async function buildOrientedStream(
   const draw = () => {
     if (ctx && video.videoWidth) {
       const z = Math.max(1, zoomRef.current || 1);
-      const scale = Math.max(outW / video.videoWidth, outH / video.videoHeight) * z;
+      const base =
+        fit === "contain"
+          ? Math.min(outW / video.videoWidth, outH / video.videoHeight)
+          : Math.max(outW / video.videoWidth, outH / video.videoHeight);
+      const scale = base * z;
       const w = video.videoWidth * scale;
       const h = video.videoHeight * scale;
+      if (fit === "contain") {
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, outW, outH);
+      }
       ctx.drawImage(video, (outW - w) / 2, (outH - h) / 2, w, h);
     }
     raf = requestAnimationFrame(draw);
@@ -78,6 +105,7 @@ async function buildOrientedStream(
     },
   };
 }
+
 
 export function useRecorder() {
   const [stream, setStream] = useState<MediaStream | null>(null);
