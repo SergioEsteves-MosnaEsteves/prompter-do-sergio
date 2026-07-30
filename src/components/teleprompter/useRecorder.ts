@@ -56,7 +56,8 @@ async function buildOrientedStream(
   let raf = 0;
   const draw = () => {
     if (ctx && video.videoWidth) {
-      const scale = Math.max(outW / video.videoWidth, outH / video.videoHeight);
+      const z = Math.max(1, zoomRef.current || 1);
+      const scale = Math.max(outW / video.videoWidth, outH / video.videoHeight) * z;
       const w = video.videoWidth * scale;
       const h = video.videoHeight * scale;
       ctx.drawImage(video, (outW - w) / 2, (outH - h) / 2, w, h);
