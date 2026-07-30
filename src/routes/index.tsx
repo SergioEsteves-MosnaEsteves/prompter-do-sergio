@@ -181,6 +181,33 @@ function Index() {
             </Row>
           </div>
 
+          <div className="space-y-2">
+            <span className="text-sm font-medium text-foreground">Formato do vídeo</span>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                variant={orientation === "vertical" ? "default" : "secondary"}
+                onClick={() => setOrientation("vertical")}
+              >
+                <RectangleVertical className="mr-2 size-4" />
+                Vertical 9:16
+              </Button>
+              <Button
+                type="button"
+                variant={orientation === "horizontal" ? "default" : "secondary"}
+                onClick={() => setOrientation("horizontal")}
+              >
+                <RectangleHorizontal className="mr-2 size-4" />
+                Horizontal 16:9
+              </Button>
+            </div>
+            {orientation === "horizontal" && (
+              <p className="text-xs text-muted-foreground">
+                Gire o celular para o lado ao gravar na horizontal.
+              </p>
+            )}
+          </div>
+
           <div className="flex gap-2">
             <Button
               type="button"
