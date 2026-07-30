@@ -81,13 +81,20 @@ function Index() {
   );
 
   const openCamera = async (f: Facing = facing) => {
+    setOpening(true);
     const ok = await rec.start(f, orientation);
+    setOpening(false);
     if (ok) {
       setStage("camera");
       setScrolling(false);
       setResetKey((k) => k + 1);
+    } else {
+      requestAnimationFrame(() =>
+        errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }),
+      );
     }
   };
+
 
   const flipCamera = async () => {
     const next: Facing = facing === "user" ? "environment" : "user";
