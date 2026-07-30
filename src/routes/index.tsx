@@ -1,6 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Camera, Download, RefreshCw, SwitchCamera } from "lucide-react";
+import {
+  Camera,
+  Download,
+  RectangleHorizontal,
+  RectangleVertical,
+  RefreshCw,
+  SwitchCamera,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
@@ -9,7 +16,11 @@ import {
   type PrompterSettings,
 } from "@/components/teleprompter/TeleprompterOverlay";
 import { RecorderControls } from "@/components/teleprompter/RecorderControls";
-import { useRecorder, type Facing } from "@/components/teleprompter/useRecorder";
+import {
+  useRecorder,
+  type Facing,
+  type Orientation,
+} from "@/components/teleprompter/useRecorder";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -41,6 +52,7 @@ function Index() {
   const [stage, setStage] = useState<Stage>("setup");
   const [text, setText] = useState("");
   const [facing, setFacing] = useState<Facing>("user");
+  const [orientation, setOrientation] = useState<Orientation>("vertical");
   const [settings, setSettings] = useState<PrompterSettings>(DEFAULTS);
   const [scrolling, setScrolling] = useState(false);
   const [resetKey, setResetKey] = useState(0);
@@ -66,7 +78,7 @@ function Index() {
   );
 
   const openCamera = async (f: Facing = facing) => {
-    const ok = await rec.start(f);
+    const ok = await rec.start(f, orientation);
     if (ok) {
       setStage("camera");
       setScrolling(false);
@@ -77,7 +89,7 @@ function Index() {
   const flipCamera = async () => {
     const next: Facing = facing === "user" ? "environment" : "user";
     setFacing(next);
-    await rec.start(next);
+    await rec.start(next, orientation);
   };
 
   const toggleRecord = () => {
@@ -169,6 +181,33 @@ function Index() {
             </Row>
           </div>
 
+          <div className="space-y-2">
+            <span className="text-sm font-medium text-foreground">Formato do vídeo</span>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                variant={orientation === "vertical" ? "default" : "secondary"}
+                onClick={() => setOrientation("vertical")}
+              >
+                <RectangleVertical className="mr-2 size-4" />
+                Vertical 9:16
+              </Button>
+              <Button
+                type="button"
+                variant={orientation === "horizontal" ? "default" : "secondary"}
+                onClick={() => setOrientation("horizontal")}
+              >
+                <RectangleHorizontal className="mr-2 size-4" />
+                Horizontal 16:9
+              </Button>
+            </div>
+            {orientation === "horizontal" && (
+              <p className="text-xs text-muted-foreground">
+                Gire o celular para o lado ao gravar na horizontal.
+              </p>
+            )}
+          </div>
+
           <div className="flex gap-2">
             <Button
               type="button"
@@ -245,23 +284,32 @@ function Index() {
   }
 
   return (
-    <main className="fixed inset-0 overflow-hidden bg-black">
-      <video
-        ref={videoRef}
-        muted
-        playsInline
-        autoPlay
-        onClick={() => setChromeVisible((v) => !v)}
-        className="size-full object-cover"
-        style={{ transform: facing === "user" ? "scaleX(-1)" : undefined }}
-      />
+    <main className="fixed inset-0 flex items-center justify-center overflow-hidden bg-black">
+      <div
+        className="relative w-full overflow-hidden"
+        style={
+          orientation === "horizontal"
+            ? { aspectRatio: "16 / 9", maxHeight: "100%" }
+            : { height: "100%" }
+        }
+      >
+        <video
+          ref={videoRef}
+          muted
+          playsInline
+          autoPlay
+          onClick={() => setChromeVisible((v) => !v)}
+          className="size-full object-cover"
+          style={{ transform: facing === "user" ? "scaleX(-1)" : undefined }}
+        />
 
-      <TeleprompterOverlay
-        text={text}
-        settings={settings}
-        scrolling={scrolling}
-        resetKey={resetKey}
-      />
+        <TeleprompterOverlay
+          text={text}
+          settings={settings}
+          scrolling={scrolling}
+          resetKey={resetKey}
+        />
+      </div>
 
       {chromeVisible && (
         <>

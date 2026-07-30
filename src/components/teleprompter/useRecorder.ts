@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export type Facing = "user" | "environment";
+export type Orientation = "vertical" | "horizontal";
 
 function pickMimeType() {
   if (typeof MediaRecorder === "undefined") return undefined;
@@ -34,15 +35,21 @@ export function useRecorder() {
   }, []);
 
   const start = useCallback(
-    async (facing: Facing) => {
+    async (facing: Facing, orientation: Orientation = "vertical") => {
       setError(null);
       try {
         if (!navigator.mediaDevices?.getUserMedia) {
           throw new Error("Este navegador não permite acessar a câmera.");
         }
         stopStream();
+        const portrait = orientation === "vertical";
         const s = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: facing, width: { ideal: 1080 }, height: { ideal: 1920 } },
+          video: {
+            facingMode: facing,
+            width: { ideal: portrait ? 1080 : 1920 },
+            height: { ideal: portrait ? 1920 : 1080 },
+            aspectRatio: { ideal: portrait ? 9 / 16 : 16 / 9 },
+          },
           audio: true,
         });
         streamRef.current = s;
