@@ -140,6 +140,15 @@ export function useRecorder() {
         });
         streamRef.current = s;
         setStream(s);
+
+        const track = s.getVideoTracks()[0];
+        const caps = (track?.getCapabilities?.() ?? {}) as { zoom?: { min: number; max: number } };
+        const hasNative = typeof caps.zoom?.max === "number" && caps.zoom.max > 1;
+        nativeZoomRef.current = hasNative;
+        setNativeZoom(hasNative);
+        setMaxZoom(hasNative ? Math.min(caps.zoom!.max, 8) : 4);
+        digitalZoomRef.current = 1;
+        setZoomState(1);
         return true;
       } catch (e) {
         const msg =
