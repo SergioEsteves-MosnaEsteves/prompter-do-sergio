@@ -1,39 +1,37 @@
-## O que está acontecendo
+## Causa mais provável
 
-Não é zoom de verdade — é recorte. Três coisas somam:
+Você está testando dentro do **preview do Lovable**, que roda o app num iframe. O navegador só libera câmera/microfone para um iframe quando ele declara a permissão (`allow="camera; microphone"`). Sem isso, a chamada de câmera é recusada pelo próprio navegador — por isso o botão parece não fazer nada.
 
-1. Pedimos à câmera uma imagem 1080x1920 / proporção 9:16. O iPhone não entrega 9:16 nativo: ele pega o sensor (4:3 ou 16:9) e **corta as laterais**, perdendo boa parte do campo de visão.
-2. A prévia usa `object-cover` e o canvas de gravação usa recorte tipo "cover", cortando ainda mais para preencher a moldura vertical.
-3. No app Câmera nativo, o iPhone pode usar a lente ultra-wide (0.5x); no navegador ele entrega a lente padrão, que já é mais fechada.
+Dois agravantes no código atual (confirmados em `src/routes/index.tsx` e `useRecorder.ts`):
 
-Confirmado no código: `useRecorder.ts` define `width/height/aspectRatio` fixos e faz `Math.max(...)` (cover) no canvas; `index.tsx` renderiza o vídeo com `object-cover`.
+1. A mensagem de erro só aparece **no topo** da tela de configuração. Com o roteiro colado, o botão fica bem abaixo — o erro é exibido fora da área visível, dando a sensação de "nada acontece".
+2. Não há estado de carregamento no botão nem tratamento específico para o caso "bloqueado por política de permissão do iframe" (o navegador devolve `NotAllowedError`, com a mesma mensagem de permissão negada, sem explicar que o problema é o preview).
 
-## O que fazer
+## Teste rápido (sem mudar nada)
 
-**1. Parar de forçar a proporção na captura**
-- Remover `aspectRatio` e as dimensões travadas do `getUserMedia`; pedir só a resolução máxima disponível (`width: { ideal: 1920 }`, `height: { ideal: 1080 }`, sem `exact`).
-- Deixar o enquadramento vertical para o canvas, não para o sensor. Assim a câmera entrega o campo de visão completo.
+Abra o app fora do preview, no endereço direto:
+`https://id-preview--8362e340-2233-4f0f-8bdb-c2bef8a6785d.lovable.app`
+Se a câmera abrir lá, está confirmado: é restrição do iframe do preview, não do app.
 
-**2. Tentar a lente mais aberta no iPhone**
-- Ao abrir a câmera, listar os dispositivos de vídeo e, quando houver mais de uma câmera traseira, preferir a de maior campo de visão (ultra-wide) via `deviceId`, com fallback para `facingMode`.
-- Aplicar `zoom` mínimo das capacidades quando existir (alguns navegadores abrem já acima de 1x).
+## O que fazer no app
 
-**3. Indicador de zoom correto**
-- Mostrar o zoom real na barra (1x = campo de visão nativo) e garantir que o slider comece no mínimo real da câmera, não num valor já ampliado.
+**1. Feedback imediato ao clicar**
+- Botão "Iniciar gravação" entra em estado "Abrindo câmera..." enquanto aguarda a permissão, e volta ao normal em caso de falha.
+- A mensagem de erro passa a aparecer logo acima/abaixo do botão (além do topo) e a tela rola até ela, para nunca ficar escondida.
 
-**4. Opção de enquadramento**
-- Novo controle na barra de gravação: **Preencher** (recorte atual, cover) ou **Cabe tudo** (contain, com faixas pretas nas laterais/topo).
-- O modo "Cabe tudo" mantém todo o campo de visão dentro do vídeo 9:16 — ninguém fica cortado. Padrão continua "Preencher".
+**2. Mensagens de erro específicas**
+- Detectar quando o app está rodando dentro de um iframe sem permissão e mostrar: "A câmera está bloqueada pela janela de prévia. Abra o app em uma aba separada para gravar." — com um link/botão que abre a aba nova.
+- Diferenciar os casos: permissão negada, nenhuma câmera encontrada (`NotFoundError`), câmera em uso por outro programa (`NotReadableError`, comum no Windows com Teams/Zoom abertos) e navegador sem suporte.
 
-**5. Consistência prévia ↔ arquivo**
-- A prévia passa a usar o mesmo modo de enquadramento do canvas, para o que se vê ser o que se grava.
+**3. Câmera no desktop**
+- No computador não existe câmera "traseira": pedir `facingMode: "environment"` pode falhar. Passar a tratar `facingMode` como preferência (`ideal`) e, se falhar, tentar de novo sem restrição de lente.
+- Esconder o botão "Frontal/Traseira" quando só houver uma câmera disponível.
 
 ## Detalhes técnicos
 
-- Arquivos: `src/components/teleprompter/useRecorder.ts` (constraints, escolha de lente, `fit` no `buildOrientedStream`), `src/routes/index.tsx` (estilo do vídeo conforme o `fit`), `src/components/teleprompter/RecorderControls.tsx` (botão de enquadramento).
-- `buildOrientedStream` passa a receber `fit: "cover" | "contain"` e usa `Math.max` ou `Math.min` na escala, limpando o canvas a cada frame no modo contain.
-- Enumeração de dispositivos só funciona depois da primeira permissão concedida; a lógica roda após o primeiro `getUserMedia` e reabre o stream se encontrar uma lente mais aberta.
+- `src/components/teleprompter/useRecorder.ts`: mapear `e.name` (`NotAllowedError` + `document !== top` → mensagem de iframe; `NotFoundError`; `NotReadableError`; `OverconstrainedError` → retry sem `facingMode` exato). Trocar `facingMode: facing` por `{ ideal: facing }` e adicionar fallback de segunda tentativa com `video: true`.
+- `src/routes/index.tsx`: estado `opening` para o botão, bloco de erro próximo ao botão com `scrollIntoView`, e ação "Abrir em nova aba" quando o erro for de iframe.
 
 ## Limitação
 
-O Safari no iPhone não expõe a ultra-wide de forma garantida em todos os modelos/versões. Se ela não aparecer, o modo "Cabe tudo" ainda resolve o corte, mas o ângulo continuará o da lente padrão — mais fechado que o app Câmera nativo.
+Se o preview continuar bloqueando a câmera, a gravação sempre precisará ser feita no endereço aberto em aba própria (ou no site publicado). O app não pode conceder a si mesmo permissão dentro do iframe.
