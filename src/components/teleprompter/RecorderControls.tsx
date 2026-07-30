@@ -76,6 +76,8 @@ export function RecorderControls({
   zoom,
   maxZoom,
   onZoomChange,
+  fit,
+  onFitChange,
 }: Props) {
   return (
     <div className="pointer-events-auto absolute inset-x-0 bottom-0 space-y-4 bg-gradient-to-t from-background via-background/90 to-transparent px-4 pb-6 pt-8">
