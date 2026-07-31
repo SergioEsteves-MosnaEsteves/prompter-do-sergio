@@ -397,7 +397,19 @@ export function useRecorder() {
       if (prev) URL.revokeObjectURL(prev);
       return null;
     });
+    setResultBlob(null);
   }, []);
+
+  /** Substitui o resultado atual pelo MP4 convertido. */
+  const replaceResult = useCallback((blob: Blob) => {
+    setResultBlob(blob);
+    setResultExt("mp4");
+    setResultUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(blob);
+    });
+  }, []);
+
 
   useEffect(() => {
     void countCameras().then(setCameraCount);
