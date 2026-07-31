@@ -74,11 +74,12 @@ async function countCameras() {
 function pickMimeType() {
   if (typeof MediaRecorder === "undefined") return undefined;
   const candidates = [
+    "video/mp4;codecs=h264,aac",
+    "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
+    "video/mp4",
     "video/webm;codecs=vp9,opus",
     "video/webm;codecs=vp8,opus",
     "video/webm",
-    "video/mp4;codecs=h264,aac",
-    "video/mp4",
   ];
   return candidates.find((t) => MediaRecorder.isTypeSupported(t));
 }
@@ -194,6 +195,8 @@ export function useRecorder() {
   const [elapsed, setElapsed] = useState(0);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultExt, setResultExt] = useState("webm");
+  const [resultBlob, setResultBlob] = useState<Blob | null>(null);
+
   const [zoom, setZoomState] = useState(1);
   const [maxZoom, setMaxZoom] = useState(4);
   const [nativeZoom, setNativeZoom] = useState(false);
@@ -357,6 +360,7 @@ export function useRecorder() {
         const type = rec.mimeType || mimeType || "video/webm";
         const blob = new Blob(chunksRef.current, { type });
         setResultExt(type.includes("mp4") ? "mp4" : "webm");
+        setResultBlob(blob);
         setResultUrl((prev) => {
           if (prev) URL.revokeObjectURL(prev);
           return URL.createObjectURL(blob);
@@ -393,7 +397,19 @@ export function useRecorder() {
       if (prev) URL.revokeObjectURL(prev);
       return null;
     });
+    setResultBlob(null);
   }, []);
+
+  /** Substitui o resultado atual pelo MP4 convertido. */
+  const replaceResult = useCallback((blob: Blob) => {
+    setResultBlob(blob);
+    setResultExt("mp4");
+    setResultUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(blob);
+    });
+  }, []);
+
 
   useEffect(() => {
     void countCameras().then(setCameraCount);
@@ -413,6 +429,8 @@ export function useRecorder() {
     elapsed,
     resultUrl,
     resultExt,
+    resultBlob,
+    replaceResult,
     start,
     stopStream,
     startRecording,

@@ -4,6 +4,7 @@ import {
   Camera,
   Download,
   ExternalLink,
+  FileVideo,
   RectangleHorizontal,
 
   RectangleVertical,
@@ -60,10 +61,30 @@ function Index() {
   const [resetKey, setResetKey] = useState(0);
   const [chromeVisible, setChromeVisible] = useState(true);
   const [opening, setOpening] = useState(false);
+  const [converting, setConverting] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [convertError, setConvertError] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const errorRef = useRef<HTMLDivElement>(null);
   const rec = useRecorder();
+
+  const convertVideo = useCallback(async () => {
+    if (!rec.resultBlob) return;
+    setConverting(true);
+    setConvertError(null);
+    setProgress(0);
+    try {
+      const { convertToMp4 } = await import("@/lib/convert-to-mp4");
+      const mp4 = await convertToMp4(rec.resultBlob, setProgress);
+      rec.replaceResult(mp4);
+    } catch {
+      setConvertError("Não foi possível converter. Tente um vídeo mais curto.");
+    } finally {
+      setConverting(false);
+    }
+  }, [rec]);
+
 
 
   useEffect(() => {
@@ -280,14 +301,41 @@ function Index() {
           playsInline
           className="w-full rounded-xl border border-border bg-black"
         />
+
+        {rec.resultExt !== "mp4" && (
+          <div className="space-y-3 rounded-lg border border-border bg-card p-3 text-sm">
+            <p className="text-muted-foreground">
+              Este navegador gravou em WebM, formato que a galeria do celular não aceita.
+              Converta para MP4 antes de salvar.
+            </p>
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full"
+              disabled={converting}
+              onClick={convertVideo}
+            >
+              <FileVideo className="mr-2 size-4" />
+              {converting
+                ? `Convertendo... ${Math.round(progress * 100)}%`
+                : "Converter para MP4"}
+            </Button>
+            {convertError && <p className="text-destructive">{convertError}</p>}
+          </div>
+        )}
+
         <a
           href={rec.resultUrl}
           download={`gravacao-${Date.now()}.${rec.resultExt}`}
           className="inline-flex h-12 w-full items-center justify-center rounded-lg bg-primary text-base font-semibold text-primary-foreground"
         >
           <Download className="mr-2 size-5" />
-          Baixar vídeo
+          Baixar vídeo {rec.resultExt === "mp4" ? "(MP4)" : "(WebM)"}
         </a>
+        <p className="text-center text-xs text-muted-foreground">
+          No iPhone: toque em Baixar e depois em Salvar em Vídeos.
+        </p>
+
         <Button
           type="button"
           variant="secondary"
