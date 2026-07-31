@@ -1,35 +1,40 @@
 ## O que acontece hoje
 
-Confirmei em `src/components/teleprompter/useRecorder.ts` (função `buildOrientedStream`, linhas 130-141) que o tamanho da "tela" de gravação é derivado do sensor da webcam:
+Em `src/components/teleprompter/useRecorder.ts` (linhas 75-83) a lista de formatos testa **WebM primeiro** e só cai para MP4 se nenhum WebM for suportado:
 
 ```
-outW = menor lado do sensor
-outH = maior lado do sensor
+video/webm;codecs=vp9,opus  ← escolhido no Chrome/Android
+video/webm;codecs=vp8,opus
+video/webm
+video/mp4;codecs=h264,aac
+video/mp4
 ```
 
-Ou seja, o formato final é o do sensor invertido, não 9:16. Numa webcam 16:9 dá 1080x1920 (correto por acaso), mas numa webcam 4:3 — muito comum em notebooks — dá 720x960, que é 3:4: a janela abre mais "quadrada", não no corte 9:16 pedido.
-
-Além disso, no modo "Cabe tudo" (`contain`) a imagem entra inteira com tarjas pretas, o que também não parece um corte 9:16 real.
+O Safari do iPhone já grava em MP4 (não suporta WebM), mas Chrome/Android e Chrome no desktop escolhem WebM — e a galeria do celular não aceita esse arquivo.
 
 ## O que fazer
 
-**1. Proporção alvo fixa, independente da webcam**
-- No `buildOrientedStream`, calcular o canvas a partir da proporção escolhida, não do sensor: vertical = 9:16, horizontal = 16:9.
-- Dimensionar pelo lado disponível do sensor (ex.: altura 1080 → 608x1080 em 9:16; ou usar 1080x1920 quando o sensor permitir), arredondando para números pares para o codificador.
+**1. Preferir MP4 sempre que o navegador suportar**
+- Inverter a ordem: `video/mp4;codecs=h264,aac` → `video/mp4` → depois os WebM como último recurso.
+- Isso já resolve em Safari, Chrome desktop recente e boa parte do Android moderno (Chrome ganhou gravação MP4/H.264).
 
-**2. Abrir a prévia já com o corte**
-- Como a prévia usa o mesmo canvas da gravação, ela passa a mostrar imediatamente a moldura 9:16 assim que a câmera abre — sem precisar mexer em nada.
-- Iniciar em `cover` (já é o padrão) para que o quadro apareça preenchido e recortado, e não com tarjas.
+**2. Converter para MP4 quando só houver WebM**
+- Na tela de prévia, se o arquivo saiu WebM, mostrar um botão "Converter para MP4 (salvar na galeria)" com barra de progresso.
+- A conversão roda 100% no aparelho com `@ffmpeg/ffmpeg` (WebAssembly) — sem servidor, sem upload.
+- Sem re-encode quando possível; se o vídeo for VP8/VP9, é preciso recodificar para H.264, o que leva alguns segundos por minuto de vídeo.
+- Depois de converter, o botão "Baixar vídeo" passa a entregar o `.mp4`.
 
-**3. Contêiner da prévia no desktop**
-- Em `src/routes/index.tsx`, o contêiner já usa `aspectRatio: rec.aspect`; com o item 1 esse valor passa a ser exatamente 0.5625 no vertical, então a caixa preta lateral do desktop fica correta e centralizada.
+**3. Ajustes de download**
+- Nome do arquivo com extensão correta (`.mp4` após a conversão).
+- No iPhone, manter a dica curta: "Toque em Baixar e depois em Salvar em Vídeos".
 
 ## Detalhes técnicos
 
-- `buildOrientedStream`: substituir `outW/outH` baseados em `short/long` por `targetRatio = orientation === "vertical" ? 9/16 : 16/9`, derivando `outH` do maior lado disponível (limitado a 1920) e `outW = round(outH * targetRatio)` (e o inverso no horizontal), com `& ~1` para paridade.
-- Retornar `aspect = outW / outH` (já existe) — passa a ser 9/16 exato.
-- Nenhuma mudança nas constraints do `getUserMedia`: continuamos pedindo o campo de visão mais amplo e recortando no canvas, para não reintroduzir o "zoom" do iPhone.
+- `pickMimeType()`: reordenar candidatos; manter `MediaRecorder.isTypeSupported` como filtro.
+- `resultExt` continua derivado do `rec.mimeType` real.
+- Novo módulo `src/lib/convert-to-mp4.ts` carregando `@ffmpeg/ffmpeg` + `@ffmpeg/util` dinamicamente (só ao clicar em converter, para não pesar o carregamento inicial), com `-c:v libx264 -preset veryfast -c:a aac -movflags +faststart`.
+- Estado de conversão (`idle | loading | running | done | error`) e progresso na tela de prévia em `src/routes/index.tsx`.
 
-## Efeito colateral esperado
+## Limitação conhecida
 
-Em webcams 4:3, o recorte 9:16 descarta bastante das laterais — é inerente ao formato vertical. O botão "Cabe tudo" continua disponível para ver a imagem inteira dentro do quadro 9:16.
+O ffmpeg WebAssembly ocupa memória e pode ficar lento em celulares antigos com vídeos longos (acima de ~3-4 minutos). O passo 1 evita a conversão na maioria dos aparelhos atuais; o passo 2 é a rede de segurança.
