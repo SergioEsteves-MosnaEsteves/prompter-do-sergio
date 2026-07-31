@@ -280,14 +280,41 @@ function Index() {
           playsInline
           className="w-full rounded-xl border border-border bg-black"
         />
+
+        {rec.resultExt !== "mp4" && (
+          <div className="space-y-3 rounded-lg border border-border bg-card p-3 text-sm">
+            <p className="text-muted-foreground">
+              Este navegador gravou em WebM, formato que a galeria do celular não aceita.
+              Converta para MP4 antes de salvar.
+            </p>
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full"
+              disabled={converting}
+              onClick={convertVideo}
+            >
+              <FileVideo className="mr-2 size-4" />
+              {converting
+                ? `Convertendo... ${Math.round(progress * 100)}%`
+                : "Converter para MP4"}
+            </Button>
+            {convertError && <p className="text-destructive">{convertError}</p>}
+          </div>
+        )}
+
         <a
           href={rec.resultUrl}
           download={`gravacao-${Date.now()}.${rec.resultExt}`}
           className="inline-flex h-12 w-full items-center justify-center rounded-lg bg-primary text-base font-semibold text-primary-foreground"
         >
           <Download className="mr-2 size-5" />
-          Baixar vídeo
+          Baixar vídeo {rec.resultExt === "mp4" ? "(MP4)" : "(WebM)"}
         </a>
+        <p className="text-center text-xs text-muted-foreground">
+          No iPhone: toque em Baixar e depois em Salvar em Vídeos.
+        </p>
+
         <Button
           type="button"
           variant="secondary"
