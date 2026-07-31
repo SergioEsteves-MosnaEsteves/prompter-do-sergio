@@ -195,6 +195,8 @@ export function useRecorder() {
   const [elapsed, setElapsed] = useState(0);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultExt, setResultExt] = useState("webm");
+  const [resultBlob, setResultBlob] = useState<Blob | null>(null);
+
   const [zoom, setZoomState] = useState(1);
   const [maxZoom, setMaxZoom] = useState(4);
   const [nativeZoom, setNativeZoom] = useState(false);
