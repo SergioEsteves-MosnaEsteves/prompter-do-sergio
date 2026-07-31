@@ -61,10 +61,30 @@ function Index() {
   const [resetKey, setResetKey] = useState(0);
   const [chromeVisible, setChromeVisible] = useState(true);
   const [opening, setOpening] = useState(false);
+  const [converting, setConverting] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [convertError, setConvertError] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const errorRef = useRef<HTMLDivElement>(null);
   const rec = useRecorder();
+
+  const convertVideo = useCallback(async () => {
+    if (!rec.resultBlob) return;
+    setConverting(true);
+    setConvertError(null);
+    setProgress(0);
+    try {
+      const { convertToMp4 } = await import("@/lib/convert-to-mp4");
+      const mp4 = await convertToMp4(rec.resultBlob, setProgress);
+      rec.replaceResult(mp4);
+    } catch {
+      setConvertError("Não foi possível converter. Tente um vídeo mais curto.");
+    } finally {
+      setConverting(false);
+    }
+  }, [rec]);
+
 
 
   useEffect(() => {
