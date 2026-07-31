@@ -429,6 +429,8 @@ export function useRecorder() {
     elapsed,
     resultUrl,
     resultExt,
+    resultBlob,
+    replaceResult,
     start,
     stopStream,
     startRecording,
