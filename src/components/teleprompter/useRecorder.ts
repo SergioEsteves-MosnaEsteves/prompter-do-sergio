@@ -360,6 +360,7 @@ export function useRecorder() {
         const type = rec.mimeType || mimeType || "video/webm";
         const blob = new Blob(chunksRef.current, { type });
         setResultExt(type.includes("mp4") ? "mp4" : "webm");
+        setResultBlob(blob);
         setResultUrl((prev) => {
           if (prev) URL.revokeObjectURL(prev);
           return URL.createObjectURL(blob);
