@@ -4,6 +4,7 @@ import {
   Camera,
   Download,
   ExternalLink,
+  FileVideo,
   RectangleHorizontal,
 
   RectangleVertical,
