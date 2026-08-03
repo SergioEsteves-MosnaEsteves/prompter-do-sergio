@@ -1,19 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Camera,
   Download,
   ExternalLink,
   FileVideo,
   RectangleHorizontal,
-
   RectangleVertical,
   RefreshCw,
+  Sparkles,
   SwitchCamera,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
+import { generateScriptFromUrl } from "@/lib/script.functions";
 import {
   TeleprompterOverlay,
   type PrompterSettings,
