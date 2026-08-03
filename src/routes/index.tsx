@@ -31,13 +31,13 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Prompter — Grave vídeos com teleprompter no celular" },
+      { title: "PROMPTER DO SERGIO — Grave vídeos com teleprompter no celular" },
       {
         name: "description",
         content:
           "Grave vídeos pela câmera do celular com um teleprompter rolando na tela. Controle velocidade, fonte e opacidade e baixe o vídeo direto no aparelho.",
       },
-      { property: "og:title", content: "Prompter — Grave vídeos com teleprompter no celular" },
+      { property: "og:title", content: "PROMPTER DO SERGIO — Grave vídeos com teleprompter no celular" },
       {
         property: "og:description",
         content:
@@ -174,7 +174,7 @@ function Index() {
     return (
       <main className="mx-auto min-h-screen w-full max-w-lg px-5 pb-14 pt-10">
         <header className="mb-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Prompter</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">PROMPTER DO SERGIO</p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground">
             Grave olhando para a câmera
           </h1>
