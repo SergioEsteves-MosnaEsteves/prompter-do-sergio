@@ -22,6 +22,7 @@ import {
   type PrompterSettings,
 } from "@/components/teleprompter/TeleprompterOverlay";
 import { RecorderControls } from "@/components/teleprompter/RecorderControls";
+import { clampSpeed, useSpeedShortcuts } from "@/components/teleprompter/useSpeedShortcuts";
 import {
   useRecorder,
   type Facing,
