@@ -92,6 +92,7 @@ Regras:
 - OBRIGATÓRIO: a última linha do roteiro deve ser um convite falado para ler o artigo completo no site ${siteName}. Cite apenas o nome do site (${siteName}), nunca a URL completa nem caminhos.
 - Frases curtas, voz ativa, linguagem falada e direta. Uma ideia por linha.
 - Separe as frases por quebras de linha, respeitando a respiração de quem fala.
+- Após cada parágrafo, inclua uma linha em branco adicional.
 - NÃO use marcações de cena, colchetes, títulos, emojis, hashtags, asteriscos ou numeração.
 - NÃO invente dados: use somente o que está no artigo. Sem informações não confirmadas.
 - Devolva apenas o texto do roteiro.`;
