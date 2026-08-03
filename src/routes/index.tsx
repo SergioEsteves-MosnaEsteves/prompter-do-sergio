@@ -22,6 +22,7 @@ import {
   type PrompterSettings,
 } from "@/components/teleprompter/TeleprompterOverlay";
 import { RecorderControls } from "@/components/teleprompter/RecorderControls";
+import { clampSpeed, useSpeedShortcuts } from "@/components/teleprompter/useSpeedShortcuts";
 import {
   useRecorder,
   type Facing,
@@ -130,6 +131,37 @@ function Index() {
     (p: Partial<PrompterSettings>) => setSettings((s) => ({ ...s, ...p })),
     [],
   );
+
+  const [speedHint, setSpeedHint] = useState<number | null>(null);
+  const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showSpeedHint = useCallback((value: number) => {
+    setSpeedHint(value);
+    if (hintTimer.current) clearTimeout(hintTimer.current);
+    hintTimer.current = setTimeout(() => setSpeedHint(null), 1000);
+  }, []);
+
+  const adjustSpeed = useCallback(
+    (delta: number) => {
+      setSettings((s) => {
+        const speed = clampSpeed(s.speed + delta);
+        showSpeedHint(speed);
+        return { ...s, speed };
+      });
+    },
+    [showSpeedHint],
+  );
+
+  useSpeedShortcuts(stage === "camera", adjustSpeed);
+
+  const patchWithHint = useCallback(
+    (p: Partial<PrompterSettings>) => {
+      if (typeof p.speed === "number") showSpeedHint(p.speed);
+      patch(p);
+    },
+    [patch, showSpeedHint],
+  );
+
 
   const openCamera = async (f: Facing = facing) => {
     setOpening(true);
@@ -490,6 +522,13 @@ function Index() {
         />
       </div>
 
+      {speedHint !== null && (
+        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-background/80 px-5 py-3 text-center">
+          <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Velocidade</div>
+          <div className="text-2xl font-bold tabular-nums text-foreground">{speedHint}</div>
+        </div>
+      )}
+
       {chromeVisible && (
         <>
           <button
@@ -502,7 +541,8 @@ function Index() {
           </button>
           <RecorderControls
             settings={settings}
-            onChange={patch}
+            onChange={patchWithHint}
+
             scrolling={scrolling}
             onToggleScroll={() => setScrolling((s) => !s)}
             onRestart={() => setResetKey((k) => k + 1)}

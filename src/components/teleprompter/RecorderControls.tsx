@@ -1,7 +1,54 @@
+import { useCallback, useEffect, useRef, type ReactNode } from "react";
 import { Minus, Pause, Play, Plus, RotateCcw } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import type { PrompterSettings } from "./TeleprompterOverlay";
 import type { Fit } from "./useRecorder";
+import { clampSpeed, SPEED_STEP } from "./useSpeedShortcuts";
+
+function HoldButton({
+  onPress,
+  ariaLabel,
+  children,
+}: {
+  onPress: () => void;
+  ariaLabel: string;
+  children: ReactNode;
+}) {
+  const timers = useRef<{ timeout?: ReturnType<typeof setTimeout>; interval?: ReturnType<typeof setInterval> }>({});
+  const pressRef = useRef(onPress);
+  pressRef.current = onPress;
+
+  const stop = useCallback(() => {
+    if (timers.current.timeout) clearTimeout(timers.current.timeout);
+    if (timers.current.interval) clearInterval(timers.current.interval);
+    timers.current = {};
+  }, []);
+
+  useEffect(() => stop, [stop]);
+
+  const start = useCallback(() => {
+    pressRef.current();
+    timers.current.timeout = setTimeout(() => {
+      timers.current.interval = setInterval(() => pressRef.current(), 120);
+    }, 450);
+  }, []);
+
+  return (
+    <button
+      type="button"
+      aria-label={ariaLabel}
+      onPointerDown={start}
+      onPointerUp={stop}
+      onPointerLeave={stop}
+      onPointerCancel={stop}
+      onContextMenu={(e) => e.preventDefault()}
+      className="flex size-14 min-h-14 min-w-14 select-none items-center justify-center rounded-full bg-secondary text-secondary-foreground active:opacity-70"
+    >
+      {children}
+    </button>
+  );
+}
+
 
 type Props = {
   settings: PrompterSettings;
@@ -113,13 +160,7 @@ export function RecorderControls({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2">
-        <Stepper
-          label="Velocidade"
-          value={`${settings.speed}`}
-          onDec={() => onChange({ speed: Math.max(10, settings.speed - 5) })}
-          onInc={() => onChange({ speed: Math.min(200, settings.speed + 5) })}
-        />
+      <div className="flex items-center justify-center">
         <Stepper
           label="Fonte"
           value={`${settings.fontSize}`}
@@ -127,6 +168,7 @@ export function RecorderControls({
           onInc={() => onChange({ fontSize: Math.min(72, settings.fontSize + 2) })}
         />
       </div>
+
 
       <div className="grid grid-cols-2 gap-4">
         <label className="space-y-1.5">
@@ -188,22 +230,42 @@ export function RecorderControls({
       </div>
 
 
-      <div className="flex justify-center pt-1">
-        <button
-          type="button"
-          onClick={onToggleRecord}
-          aria-label={recording ? "Parar gravação" : "Gravar"}
-          className="flex size-18 items-center justify-center rounded-full border-4 border-foreground/80 p-1"
+      <div className="flex items-center justify-center gap-6 pt-1">
+        <HoldButton
+          onPress={() => onChange({ speed: clampSpeed(settings.speed - SPEED_STEP) })}
+          ariaLabel="Diminuir velocidade do teleprompter"
         >
-          <span
-            className={
-              recording
-                ? "size-7 rounded-md bg-destructive"
-                : "size-full rounded-full bg-destructive"
-            }
-          />
-        </button>
+          <Minus className="size-7" />
+        </HoldButton>
+
+        <div className="flex flex-col items-center gap-1">
+          <button
+            type="button"
+            onClick={onToggleRecord}
+            aria-label={recording ? "Parar gravação" : "Gravar"}
+            className="flex size-18 items-center justify-center rounded-full border-4 border-foreground/80 p-1"
+          >
+            <span
+              className={
+                recording
+                  ? "size-7 rounded-md bg-destructive"
+                  : "size-full rounded-full bg-destructive"
+              }
+            />
+          </button>
+          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            Velocidade <span className="tabular-nums text-foreground">{settings.speed}</span>
+          </span>
+        </div>
+
+        <HoldButton
+          onPress={() => onChange({ speed: clampSpeed(settings.speed + SPEED_STEP) })}
+          ariaLabel="Aumentar velocidade do teleprompter"
+        >
+          <Plus className="size-7" />
+        </HoldButton>
       </div>
+
     </div>
   );
 }
