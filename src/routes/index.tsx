@@ -131,6 +131,37 @@ function Index() {
     [],
   );
 
+  const [speedHint, setSpeedHint] = useState<number | null>(null);
+  const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showSpeedHint = useCallback((value: number) => {
+    setSpeedHint(value);
+    if (hintTimer.current) clearTimeout(hintTimer.current);
+    hintTimer.current = setTimeout(() => setSpeedHint(null), 1000);
+  }, []);
+
+  const adjustSpeed = useCallback(
+    (delta: number) => {
+      setSettings((s) => {
+        const speed = clampSpeed(s.speed + delta);
+        showSpeedHint(speed);
+        return { ...s, speed };
+      });
+    },
+    [showSpeedHint],
+  );
+
+  useSpeedShortcuts(stage === "camera", adjustSpeed);
+
+  const patchWithHint = useCallback(
+    (p: Partial<PrompterSettings>) => {
+      if (typeof p.speed === "number") showSpeedHint(p.speed);
+      patch(p);
+    },
+    [patch, showSpeedHint],
+  );
+
+
   const openCamera = async (f: Facing = facing) => {
     setOpening(true);
     const ok = await rec.start(f, orientation);
