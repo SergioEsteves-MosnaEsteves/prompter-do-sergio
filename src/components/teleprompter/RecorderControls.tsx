@@ -113,13 +113,7 @@ export function RecorderControls({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2">
-        <Stepper
-          label="Velocidade"
-          value={`${settings.speed}`}
-          onDec={() => onChange({ speed: Math.max(10, settings.speed - 5) })}
-          onInc={() => onChange({ speed: Math.min(200, settings.speed + 5) })}
-        />
+      <div className="flex items-center justify-center">
         <Stepper
           label="Fonte"
           value={`${settings.fontSize}`}
@@ -127,6 +121,7 @@ export function RecorderControls({
           onInc={() => onChange({ fontSize: Math.min(72, settings.fontSize + 2) })}
         />
       </div>
+
 
       <div className="grid grid-cols-2 gap-4">
         <label className="space-y-1.5">
