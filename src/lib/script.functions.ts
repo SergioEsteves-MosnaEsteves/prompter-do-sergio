@@ -67,6 +67,14 @@ export const generateScriptFromUrl = createServerFn({ method: "POST" })
       );
     }
 
+    const siteName = (() => {
+      try {
+        return new URL(data.url).hostname.replace(/^www\./i, "");
+      } catch {
+        return "";
+      }
+    })();
+
     const words =
       data.duration === "30" ? "70 a 90" : data.duration === "60" ? "140 a 170" : "210 a 250";
     const platformNote =
@@ -81,13 +89,14 @@ Regras:
 - ${platformNote}
 - Aproximadamente ${words} palavras (vídeo de ${data.duration} segundos).
 - Estrutura: gancho de impacto em tom de manchete (1 frase), contexto (1 frase), 3 a 4 pontos-chave, fechamento com CTA curto.
+- OBRIGATÓRIO: a última linha do roteiro deve ser um convite falado para ler o artigo completo no site ${siteName}. Cite apenas o nome do site (${siteName}), nunca a URL completa nem caminhos.
 - Frases curtas, voz ativa, linguagem falada e direta. Uma ideia por linha.
 - Separe as frases por quebras de linha, respeitando a respiração de quem fala.
 - NÃO use marcações de cena, colchetes, títulos, emojis, hashtags, asteriscos ou numeração.
 - NÃO invente dados: use somente o que está no artigo. Sem informações não confirmadas.
 - Devolva apenas o texto do roteiro.`;
 
-    const user = `Título: ${title}\nURL: ${data.url}\n\nConteúdo do artigo:\n${text}`;
+    const user = `Site: ${siteName}\nTítulo: ${title}\nURL: ${data.url}\n\nConteúdo do artigo:\n${text}`;
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
