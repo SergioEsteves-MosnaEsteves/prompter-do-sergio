@@ -256,9 +256,8 @@ function Index() {
             {genError && <p className="text-sm text-destructive">{genError}</p>}
           </div>
 
-
-        <section className="space-y-6">
           <div className="space-y-2">
+
             <label htmlFor="roteiro" className="text-sm font-medium text-foreground">
               Roteiro
             </label>
