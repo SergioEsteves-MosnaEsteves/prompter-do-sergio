@@ -183,22 +183,42 @@ export function RecorderControls({
       </div>
 
 
-      <div className="flex justify-center pt-1">
-        <button
-          type="button"
-          onClick={onToggleRecord}
-          aria-label={recording ? "Parar gravação" : "Gravar"}
-          className="flex size-18 items-center justify-center rounded-full border-4 border-foreground/80 p-1"
+      <div className="flex items-center justify-center gap-6 pt-1">
+        <HoldButton
+          onPress={() => onChange({ speed: clampSpeed(settings.speed - SPEED_STEP) })}
+          ariaLabel="Diminuir velocidade do teleprompter"
         >
-          <span
-            className={
-              recording
-                ? "size-7 rounded-md bg-destructive"
-                : "size-full rounded-full bg-destructive"
-            }
-          />
-        </button>
+          <Minus className="size-7" />
+        </HoldButton>
+
+        <div className="flex flex-col items-center gap-1">
+          <button
+            type="button"
+            onClick={onToggleRecord}
+            aria-label={recording ? "Parar gravação" : "Gravar"}
+            className="flex size-18 items-center justify-center rounded-full border-4 border-foreground/80 p-1"
+          >
+            <span
+              className={
+                recording
+                  ? "size-7 rounded-md bg-destructive"
+                  : "size-full rounded-full bg-destructive"
+              }
+            />
+          </button>
+          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            Velocidade <span className="tabular-nums text-foreground">{settings.speed}</span>
+          </span>
+        </div>
+
+        <HoldButton
+          onPress={() => onChange({ speed: clampSpeed(settings.speed + SPEED_STEP) })}
+          ariaLabel="Aumentar velocidade do teleprompter"
+        >
+          <Plus className="size-7" />
+        </HoldButton>
       </div>
+
     </div>
   );
 }
