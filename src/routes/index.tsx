@@ -522,6 +522,13 @@ function Index() {
         />
       </div>
 
+      {speedHint !== null && (
+        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-background/80 px-5 py-3 text-center">
+          <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Velocidade</div>
+          <div className="text-2xl font-bold tabular-nums text-foreground">{speedHint}</div>
+        </div>
+      )}
+
       {chromeVisible && (
         <>
           <button
@@ -534,7 +541,8 @@ function Index() {
           </button>
           <RecorderControls
             settings={settings}
-            onChange={patch}
+            onChange={patchWithHint}
+
             scrolling={scrolling}
             onToggleScroll={() => setScrolling((s) => !s)}
             onRestart={() => setResetKey((k) => k + 1)}
