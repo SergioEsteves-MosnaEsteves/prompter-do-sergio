@@ -108,11 +108,12 @@ Todo roteiro que você escrever deve usar exclusivamente o estilo de LINGUAGEM M
 
 Siga esta arquitetura obrigatoriamente, marcando cada bloco com o rótulo entre colchetes:
 
-- [GANCHO] (primeiras 1-3 frases): a manchete mais forte de todas. Promessa, polêmica, dado chocante ou pergunta impossível de ignorar. Decide 80% da retenção.
-- [SUSTENTAÇÃO] (frases 4-5): eleva a aposta ou cria identificação. "E o pior: você provavelmente faz isso todo dia."
-- [DESENVOLVIMENTO]: entrega o conteúdo em blocos curtos, cada bloco abrindo com uma mini-manchete. A cada 3-4 frases, insira uma nova quebra de padrão (pergunta, contraste, número).
-- [VIRADA] (opcional): um "mas" que muda a perspectiva. "Só que tem um detalhe que ninguém conta."
-- [CTA] (frases finais): ordem direta e específica. Nunca "não esquece de curtir". Sempre ligada ao valor: "Salva esse vídeo antes de gravar seu próximo Reels." / "Comenta AGORA que eu te mando o passo a passo."
+- [GANCHO]: abre com a manchete mais forte de todas — promessa, polêmica, dado chocante ou pergunta impossível de ignorar. Depois, 1 ou 2 frases fluidas que sustentam essa promessa.
+- [SUSTENTAÇÃO]: abre com uma manchete que eleva a aposta ou cria identificação, seguida de texto corrido que aproxima a história da vida de quem assiste.
+- [DESENVOLVIMENTO]: cada sub-tema abre com uma mini-manchete e é desenvolvido em texto fluido, com contexto, número e explicação encadeados naturalmente.
+- [VIRADA] (opcional): abre com um "mas" que muda a perspectiva e explica o detalhe em frases corridas.
+- [CTA]: abre com uma ordem direta e específica, ligada ao valor. Nunca "não esquece de curtir".
+
 
 ## FORMATO DE SAÍDA
 
@@ -134,14 +135,14 @@ Entregue SOMENTE o roteiro falado, sem título, sem duração e sem qualquer inf
 
 ## CHECKLIST FINAL (valide antes de entregar)
 
-- Alguma frase tem mais de 22 palavras? Quebre.
-- Alguma frase termina sem impacto? Reescreva para que o final seja um ponto de corte.
-- Alguma frase serve só de transição? Delete ou transforme em manchete.
+- Cada bloco abre com uma manchete de no máximo 15 palavras? Se não, reescreva a abertura.
+- O corpo de cada bloco lê como conversa fluida, e não como uma sequência de manchetes? Se estiver picotado, encadeie as frases.
+- Alguma frase do corpo passa de 25 palavras? Quebre.
+- Alguma frase serve só de transição burocrática? Delete ou funda com a frase seguinte.
 - A primeira frase pararia o scroll de um desconhecido? Se não, reescreva.
 - Tem pelo menos um número específico no roteiro?
 - O CTA dá uma ordem clara e única?
-- Lendo em voz alta, o ritmo é de socos curtos, não de parágrafo de livro?
-- As frases se conectam como uma conversa fluida, sem parecerem uma lista robótica?
+- Lendo em voz alta, soa natural, com respiração e ritmo variado?
 - Removeu título, duração e qualquer informação técnica do texto final?`
 
 
