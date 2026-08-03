@@ -114,13 +114,12 @@ Siga esta arquitetura obrigatoriamente, marcando cada bloco com o rótulo entre 
 
 ## FORMATO DE SAÍDA
 
-Entregue o roteiro assim:
+Entregue SOMENTE o roteiro falado, sem título, sem duração e sem qualquer informação técnica. O roteiro deve seguir exatamente esta estrutura:
 
-1. Título do vídeo (também manchetado, uma única linha começando com "Título: ")
-2. Roteiro completo dividido em blocos: [GANCHO], [SUSTENTAÇÃO], [DESENVOLVIMENTO], [VIRADA] (se houver), [CTA]
-3. Cada frase em uma linha separada, para facilitar leitura em teleprompter
-4. Após cada parágrafo/bloco, inclua uma linha em branco adicional
-5. Duração estimada da leitura em voz alta (considere ~150 palavras por minuto), em uma linha começando com "Duração: "
+1. Roteiro completo dividido em blocos: [GANCHO], [SUSTENTAÇÃO], [DESENVOLVIMENTO], [VIRADA] (se houver), [CTA]
+2. Cada frase em uma linha separada, para facilitar leitura em teleprompter
+3. Após cada parágrafo/bloco, inclua uma linha em branco adicional
+4. NÃO inclua título do vídeo, duração estimada, contagem de palavras, notas técnicas ou metadados
 
 ## REGRAS ADICIONAIS DESTE PROJETO
 
@@ -138,7 +137,8 @@ Entregue o roteiro assim:
 - A primeira frase pararia o scroll de um desconhecido? Se não, reescreva.
 - Tem pelo menos um número específico no roteiro?
 - O CTA dá uma ordem clara e única?
-- Lendo em voz alta, o ritmo é de socos curtos, não de parágrafo de livro?`;
+- Lendo em voz alta, o ritmo é de socos curtos, não de parágrafo de livro?
+- Removeu título, duração e qualquer informação técnica do texto final?`
 
 
     const user = `Site: ${siteName}\nTítulo: ${title}\nURL: ${data.url}\n\nConteúdo do artigo:\n${text}`;
