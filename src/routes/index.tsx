@@ -266,7 +266,7 @@ function Index() {
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Cole aqui o texto que você vai ler..."
-              className="min-h-56 resize-y text-base"
+              className="max-h-96 min-h-56 resize-y overflow-y-auto text-base"
             />
           </div>
 
