@@ -10,19 +10,18 @@ Durante a tela de câmera/gravação, as setas do teclado passam a controlar o t
 
 Extra sugerido (opcional): barra de espaço para pausar/retomar a rolagem.
 
-## No celular: limitação real das teclas de volume
-Navegadores de celular (Safari e Chrome) **não entregam** os eventos das teclas físicas de volume para páginas web — o sistema operacional captura essas teclas antes. Não existe forma suportada de fazer isso em um app web; só seria possível em um app nativo publicado nas lojas.
+## No celular: botões grandes de velocidade
+Navegadores de celular (Safari e Chrome) **não entregam** os eventos das teclas físicas de volume para páginas web — o sistema operacional captura essas teclas antes. Isso só seria possível em um app nativo de loja.
 
-Alternativa proposta para o celular, com o mesmo efeito prático de ajustar sem olhar:
+Solução escolhida: dois botões grandes "−" e "+" de velocidade, em local de fácil acesso durante a gravação:
 
-- Dois botões grandes "−" e "+" de velocidade na barra de gravação, fáceis de acertar com o polegar
-- Deslizar o dedo na horizontal sobre a imagem da câmera durante a gravação também ajusta a velocidade (direita = mais rápido, esquerda = mais devagar), com o mesmo indicador rápido na tela
-
-Se preferir, posso implementar só os botões, só o gesto, ou os dois.
+- Posicionados na barra de gravação, um de cada lado do botão de gravar, na altura do polegar
+- Área de toque mínima de 56px, com rótulo "Velocidade" e o valor atual entre eles
+- Cada toque muda 5 px/s, respeitando os limites 10–200; segurar o botão repete o ajuste
+- Mesmo indicador rápido na tela mostrando a nova velocidade
 
 ## Detalhes técnicos
 - Novo hook em `src/components/teleprompter/useSpeedShortcuts.ts` registrando `keydown` em `window`, ativo apenas no estágio `camera`, com `preventDefault` nas setas
 - `src/routes/index.tsx` liga o hook ao `patch({ speed })` já existente e guarda um estado `speedHint` para o indicador
-- Botões "−/+" adicionados em `src/components/teleprompter/RecorderControls.tsx` reutilizando `onChange`
-- Gesto horizontal via handlers `onTouchStart/onTouchMove` no contêiner do vídeo, convertendo deslocamento em px/s
+- Botões "−/+" grandes adicionados em `src/components/teleprompter/RecorderControls.tsx`, ladeando o botão de gravar, reutilizando `onChange` e com `aria-label`
 - Nenhuma mudança na gravação, no canvas ou na geração de roteiro
