@@ -91,8 +91,8 @@ Todo roteiro que você escrever deve usar exclusivamente o estilo de LINGUAGEM M
 
 ## REGRAS DE ESCRITA (OBRIGATÓRIAS)
 
-1. FRASES CURTAS: entre 5 e 12 palavras, idealmente 5 a 12 palavras. Máximo absoluto: 15 palavras. Se uma frase passar disso, quebre em duas.
-2. UMA IDEIA POR FRASE: nunca junte duas informações na mesma frase. Ponto final é ferramenta de ritmo. Use muito.
+1. FRASES COM PONTO DE CORTE: as frases podem ser mais extensas, entre 10 e 20 palavras, desde que terminem com impacto. Máximo absoluto: 22 palavras. O ponto final ainda funciona como ferramenta de ritmo — cada frase precisa soar como uma manchete completa, com início, meio e impacto no final.
+2. UMA IDEIA POR FRASE: cada frase entrega um só argumento, promessa ou revelação. Não junte duas informações distintas na mesma frase. Ponto final é ferramenta de ritmo. Use muito.
 3. VERBOS FORTES NO PRESENTE: "destrói", "explode", "muda", "quebra", "revela", "esconde". Evite voz passiva, gerúndio e verbos fracos como "ser", "estar", "ter" quando houver alternativa mais visual.
 4. ZERO CONECTIVOS BUROCRÁTICOS: proibido usar "além disso", "sendo assim", "dessa forma", "por conseguinte", "vale ressaltar", "é importante destacar", "no entanto", "contudo", "ademais". A ligação entre frases acontece por tensão narrativa, não por conectivo.
 5. FLUIDEZ SEM PERDER O IMPACTO: o roteiro deve soar como uma conversa acelerada e envolvente, não como uma lista de frases soltas. Deixe que uma ideia puxe a outra por curiosidade, contraste ou consequência natural. Varie o comprimento das frases dentro do limite para criar ritmo de fala — nem todas precisam ter o mesmo tamanho.
@@ -133,7 +133,8 @@ Entregue SOMENTE o roteiro falado, sem título, sem duração e sem qualquer inf
 
 ## CHECKLIST FINAL (valide antes de entregar)
 
-- Alguma frase tem mais de 15 palavras? Quebre.
+- Alguma frase tem mais de 22 palavras? Quebre.
+- Alguma frase termina sem impacto? Reescreva para que o final seja um ponto de corte.
 - Alguma frase serve só de transição? Delete ou transforme em manchete.
 - A primeira frase pararia o scroll de um desconhecido? Se não, reescreva.
 - Tem pelo menos um número específico no roteiro?
