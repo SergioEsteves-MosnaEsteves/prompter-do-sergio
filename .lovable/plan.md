@@ -23,6 +23,5 @@ Solução escolhida: dois botões grandes "−" e "+" de velocidade, em local de
 ## Detalhes técnicos
 - Novo hook em `src/components/teleprompter/useSpeedShortcuts.ts` registrando `keydown` em `window`, ativo apenas no estágio `camera`, com `preventDefault` nas setas
 - `src/routes/index.tsx` liga o hook ao `patch({ speed })` já existente e guarda um estado `speedHint` para o indicador
-- Botões "−/+" adicionados em `src/components/teleprompter/RecorderControls.tsx` reutilizando `onChange`
-- Gesto horizontal via handlers `onTouchStart/onTouchMove` no contêiner do vídeo, convertendo deslocamento em px/s
+- Botões "−/+" grandes adicionados em `src/components/teleprompter/RecorderControls.tsx`, ladeando o botão de gravar, reutilizando `onChange` e com `aria-label`
 - Nenhuma mudança na gravação, no canvas ou na geração de roteiro
