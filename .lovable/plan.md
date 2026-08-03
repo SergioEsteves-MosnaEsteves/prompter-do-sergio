@@ -1,40 +1,40 @@
-## O que acontece hoje
+# Roteiro automático a partir de uma URL
 
-Em `src/components/teleprompter/useRecorder.ts` (linhas 75-83) a lista de formatos testa **WebM primeiro** e só cai para MP4 se nenhum WebM for suportado:
+## O que muda para você
 
-```
-video/webm;codecs=vp9,opus  ← escolhido no Chrome/Android
-video/webm;codecs=vp8,opus
-video/webm
-video/mp4;codecs=h264,aac
-video/mp4
-```
+Na tela inicial, acima do campo "Roteiro", entra um campo opcional **Link do artigo**.
 
-O Safari do iPhone já grava em MP4 (não suporta WebM), mas Chrome/Android e Chrome no desktop escolhem WebM — e a galeria do celular não aceita esse arquivo.
+1. Você cola a URL de uma matéria e toca em **Gerar roteiro**.
+2. O app lê o conteúdo da página e escreve um roteiro pronto para falar em vídeo, em português, com linguagem de manchete.
+3. O texto cai direto no campo Roteiro — você pode editar tudo antes de gravar.
 
-## O que fazer
+Ao lado do botão, dois ajustes rápidos:
+- **Duração**: 30s, 60s ou 90s (define o tamanho do roteiro).
+- **Plataforma**: Instagram Reels / YouTube Shorts (mais direto) ou YouTube (mais desenvolvido).
 
-**1. Preferir MP4 sempre que o navegador suportar**
-- Inverter a ordem: `video/mp4;codecs=h264,aac` → `video/mp4` → depois os WebM como último recurso.
-- Isso já resolve em Safari, Chrome desktop recente e boa parte do Android moderno (Chrome ganhou gravação MP4/H.264).
+Enquanto gera, o botão mostra "Gerando roteiro..."; se a página não puder ser lida (paywall, site que bloqueia leitura), aparece um aviso claro pedindo para colar o texto manualmente.
 
-**2. Converter para MP4 quando só houver WebM**
-- Na tela de prévia, se o arquivo saiu WebM, mostrar um botão "Converter para MP4 (salvar na galeria)" com barra de progresso.
-- A conversão roda 100% no aparelho com `@ffmpeg/ffmpeg` (WebAssembly) — sem servidor, sem upload.
-- Sem re-encode quando possível; se o vídeo for VP8/VP9, é preciso recodificar para H.264, o que leva alguns segundos por minuto de vídeo.
-- Depois de converter, o botão "Baixar vídeo" passa a entregar o `.mp4`.
+## Estrutura do roteiro gerado
 
-**3. Ajustes de download**
-- Nome do arquivo com extensão correta (`.mp4` após a conversão).
-- No iPhone, manter a dica curta: "Toque em Baixar e depois em Salvar em Vídeos".
+Segue boas práticas de vídeo curto:
+
+- **Gancho (0-3s)**: uma frase de impacto, em tom de manchete, que faz parar o scroll.
+- **Contexto (1 frase)**: do que se trata, sem enrolação.
+- **Desenvolvimento**: 3 a 4 pontos-chave, frases curtas, voz ativa, uma ideia por linha.
+- **Fechamento + CTA**: conclusão e chamada ("segue para mais", "comenta o que você acha").
+
+Regras aplicadas na geração: frases faláveis (nada de jargão), sem marcações de cena ou colchetes, quebras de linha por respiração — o formato que o teleprompter rola melhor. Sem inventar dados: só o que está no artigo.
 
 ## Detalhes técnicos
 
-- `pickMimeType()`: reordenar candidatos; manter `MediaRecorder.isTypeSupported` como filtro.
-- `resultExt` continua derivado do `rec.mimeType` real.
-- Novo módulo `src/lib/convert-to-mp4.ts` carregando `@ffmpeg/ffmpeg` + `@ffmpeg/util` dinamicamente (só ao clicar em converter, para não pesar o carregamento inicial), com `-c:v libx264 -preset veryfast -c:a aac -movflags +faststart`.
-- Estado de conversão (`idle | loading | running | done | error`) e progresso na tela de prévia em `src/routes/index.tsx`.
+- Ativar Lovable Cloud (necessário para a chave do gateway de IA).
+- Nova server function `src/lib/script.functions.ts` → `generateScriptFromUrl({ url, duration, platform })`:
+  - valida a URL com Zod (só http/https);
+  - busca o HTML e extrai o texto principal (remoção de script/style/nav/footer, corte por tamanho);
+  - chama o Lovable AI Gateway (`google/gemini-2.5-flash`) com um prompt de sistema com as regras de roteiro acima e devolve texto puro.
+- `src/routes/index.tsx`: campo URL, selects de duração/plataforma, botão com `useServerFn` + `useMutation`, estados de carregando/erro, e preenchimento do `text`.
+- Nenhuma mudança na câmera, gravação ou conversão MP4.
 
 ## Limitação conhecida
 
-O ffmpeg WebAssembly ocupa memória e pode ficar lento em celulares antigos com vídeos longos (acima de ~3-4 minutos). O passo 1 evita a conversão na maioria dos aparelhos atuais; o passo 2 é a rede de segurança.
+Sites com paywall, login ou renderização só por JavaScript podem não devolver texto legível. Nesses casos o app avisa e você segue colando o roteiro na mão.
