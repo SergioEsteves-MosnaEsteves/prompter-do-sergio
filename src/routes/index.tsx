@@ -183,7 +183,78 @@ function Index() {
           </p>
         </header>
 
+        <section className="space-y-6">
+          <div className="space-y-3 rounded-xl border border-border bg-card p-4">
+            <div className="space-y-2">
+              <label htmlFor="url" className="text-sm font-medium text-foreground">
+                Link do artigo <span className="text-muted-foreground">(opcional)</span>
+              </label>
+              <Input
+                id="url"
+                type="url"
+                inputMode="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://site.com/materia"
+              />
+              <p className="text-xs text-muted-foreground">
+                Geramos um roteiro em linguagem de manchete a partir da matéria.
+              </p>
+            </div>
 
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <span className="text-xs text-muted-foreground">Duração</span>
+                <div className="grid grid-cols-3 gap-1">
+                  {(["30", "60", "90"] as const).map((d) => (
+                    <Button
+                      key={d}
+                      type="button"
+                      size="sm"
+                      variant={duration === d ? "default" : "secondary"}
+                      onClick={() => setDuration(d)}
+                    >
+                      {d}s
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs text-muted-foreground">Plataforma</span>
+                <div className="grid grid-cols-2 gap-1">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={platform === "reels" ? "default" : "secondary"}
+                    onClick={() => setPlatform("reels")}
+                  >
+                    Reels
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={platform === "youtube" ? "default" : "secondary"}
+                    onClick={() => setPlatform("youtube")}
+                  >
+                    YouTube
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full"
+              disabled={url.trim().length === 0 || generating}
+              onClick={generateScript}
+            >
+              <Sparkles className="mr-2 size-4" />
+              {generating ? "Gerando roteiro..." : "Gerar roteiro"}
+            </Button>
+
+            {genError && <p className="text-sm text-destructive">{genError}</p>}
+          </div>
 
 
         <section className="space-y-6">
