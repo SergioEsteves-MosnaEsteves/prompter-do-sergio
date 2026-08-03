@@ -1,7 +1,54 @@
+import { useCallback, useEffect, useRef, type ReactNode } from "react";
 import { Minus, Pause, Play, Plus, RotateCcw } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import type { PrompterSettings } from "./TeleprompterOverlay";
 import type { Fit } from "./useRecorder";
+import { clampSpeed, SPEED_STEP } from "./useSpeedShortcuts";
+
+function HoldButton({
+  onPress,
+  ariaLabel,
+  children,
+}: {
+  onPress: () => void;
+  ariaLabel: string;
+  children: ReactNode;
+}) {
+  const timers = useRef<{ timeout?: ReturnType<typeof setTimeout>; interval?: ReturnType<typeof setInterval> }>({});
+  const pressRef = useRef(onPress);
+  pressRef.current = onPress;
+
+  const stop = useCallback(() => {
+    if (timers.current.timeout) clearTimeout(timers.current.timeout);
+    if (timers.current.interval) clearInterval(timers.current.interval);
+    timers.current = {};
+  }, []);
+
+  useEffect(() => stop, [stop]);
+
+  const start = useCallback(() => {
+    pressRef.current();
+    timers.current.timeout = setTimeout(() => {
+      timers.current.interval = setInterval(() => pressRef.current(), 120);
+    }, 450);
+  }, []);
+
+  return (
+    <button
+      type="button"
+      aria-label={ariaLabel}
+      onPointerDown={start}
+      onPointerUp={stop}
+      onPointerLeave={stop}
+      onPointerCancel={stop}
+      onContextMenu={(e) => e.preventDefault()}
+      className="flex size-14 min-h-14 min-w-14 select-none items-center justify-center rounded-full bg-secondary text-secondary-foreground active:opacity-70"
+    >
+      {children}
+    </button>
+  );
+}
+
 
 type Props = {
   settings: PrompterSettings;
