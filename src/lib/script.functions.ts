@@ -133,7 +133,8 @@ Entregue SOMENTE o roteiro falado, sem título, sem duração e sem qualquer inf
 
 ## CHECKLIST FINAL (valide antes de entregar)
 
-- Alguma frase tem mais de 15 palavras? Quebre.
+- Alguma frase tem mais de 22 palavras? Quebre.
+- Alguma frase termina sem impacto? Reescreva para que o final seja um ponto de corte.
 - Alguma frase serve só de transição? Delete ou transforme em manchete.
 - A primeira frase pararia o scroll de um desconhecido? Se não, reescreva.
 - Tem pelo menos um número específico no roteiro?
