@@ -139,6 +139,7 @@ Entregue SOMENTE o roteiro falado, sem título, sem duração e sem qualquer inf
 - Tem pelo menos um número específico no roteiro?
 - O CTA dá uma ordem clara e única?
 - Lendo em voz alta, o ritmo é de socos curtos, não de parágrafo de livro?
+- As frases se conectam como uma conversa fluida, sem parecerem uma lista robótica?
 - Removeu título, duração e qualquer informação técnica do texto final?`
 
 
