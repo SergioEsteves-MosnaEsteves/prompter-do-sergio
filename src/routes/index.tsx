@@ -67,10 +67,35 @@ function Index() {
   const [converting, setConverting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [convertError, setConvertError] = useState<string | null>(null);
+  const [url, setUrl] = useState("");
+  const [duration, setDuration] = useState<"30" | "60" | "90">("60");
+  const [platform, setPlatform] = useState<"reels" | "youtube">("reels");
+  const [generating, setGenerating] = useState(false);
+  const [genError, setGenError] = useState<string | null>(null);
+
+  const generate = useServerFn(generateScriptFromUrl);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const errorRef = useRef<HTMLDivElement>(null);
   const rec = useRecorder();
+
+  const generateScript = useCallback(async () => {
+    setGenError(null);
+    setGenerating(true);
+    try {
+      const res = await generate({ data: { url: url.trim(), duration, platform } });
+      setText(res.script);
+    } catch (err) {
+      setGenError(
+        err instanceof Error && err.message
+          ? err.message
+          : "Não foi possível gerar o roteiro. Tente outro link.",
+      );
+    } finally {
+      setGenerating(false);
+    }
+  }, [generate, url, duration, platform]);
+
 
   const convertVideo = useCallback(async () => {
     if (!rec.resultBlob) return;
