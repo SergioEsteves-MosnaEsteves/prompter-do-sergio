@@ -95,12 +95,13 @@ Todo roteiro que você escrever deve usar exclusivamente o estilo de LINGUAGEM M
 2. UMA IDEIA POR FRASE: nunca junte duas informações na mesma frase. Ponto final é ferramenta de ritmo. Use muito.
 3. VERBOS FORTES NO PRESENTE: "destrói", "explode", "muda", "quebra", "revela", "esconde". Evite voz passiva, gerúndio e verbos fracos como "ser", "estar", "ter" quando houver alternativa mais visual.
 4. ZERO CONECTIVOS BUROCRÁTICOS: proibido usar "além disso", "sendo assim", "dessa forma", "por conseguinte", "vale ressaltar", "é importante destacar", "no entanto", "contudo", "ademais". A ligação entre frases acontece por tensão narrativa, não por conectivo.
-5. ESPECIFICIDADE > ADJETIVO: troque adjetivos genéricos por números concretos. "Muito dinheiro" vira "R$ 47 mil". "Pouco tempo" vira "11 dias". Números concretos são manchetes; adjetivos genéricos são ruído.
-6. CONTRASTE E CONFLITO: manchetes vivem de oposição. Use estruturas como "Todo mundo faz X. Os que crescem fazem Y." / "Parece caro. É o mais barato que existe." / "Ele tinha tudo. Perdeu em uma decisão."
-7. LOOPS ABERTOS: termine frases criando uma pergunta implícita que só a próxima frase responde. Exemplo: "Ele fez uma única mudança." → (o espectador precisa saber qual) → "Parou de vender e começou a ensinar."
-8. FALE COM UMA PESSOA SÓ: use "você", nunca "vocês", "as pessoas", "os empreendedores". Tom de conversa direta, quase confronto.
-9. LINGUAGEM FALADA: escreva para ser dito em voz alta, não lido. Nada de palavras rebuscadas, jargão técnico sem tradução ou frases que travam a dicção. Teste mental: se não soa natural falado, reescreva.
-10. SEM ENROLAÇÃO: proibido abrir com "Oi, gente", "Nesse vídeo eu vou falar sobre...", "Antes de começar...". A primeira frase JÁ É a manchete mais forte do vídeo.
+5. FLUIDEZ SEM PERDER O IMPACTO: o roteiro deve soar como uma conversa acelerada e envolvente, não como uma lista de frases soltas. Deixe que uma ideia puxe a outra por curiosidade, contraste ou consequência natural. Varie o comprimento das frases dentro do limite para criar ritmo de fala — nem todas precisam ter o mesmo tamanho.
+6. ESPECIFICIDADE > ADJETIVO: troque adjetivos genéricos por números concretos. "Muito dinheiro" vira "R$ 47 mil". "Pouco tempo" vira "11 dias". Números concretos são manchetes; adjetivos genéricos são ruído.
+7. CONTRASTE E CONFLITO: manchetes vivem de oposição. Use estruturas como "Todo mundo faz X. Os que crescem fazem Y." / "Parece caro. É o mais barato que existe." / "Ele tinha tudo. Perdeu em uma decisão."
+8. LOOPS ABERTOS: termine frases criando uma pergunta implícita que só a próxima frase responde. Exemplo: "Ele fez uma única mudança." → (o espectador precisa saber qual) → "Parou de vender e começou a ensinar."
+9. FALE COM UMA PESSOA SÓ: use "você", nunca "vocês", "as pessoas", "os empreendedores". Tom de conversa direta, quase confronto.
+10. LINGUAGEM FALADA: escreva para ser dito em voz alta, não lido. Nada de palavras rebuscadas, jargão técnico sem tradução ou frases que travam a dicção. Teste mental: se não soa natural falado, reescreva.
+11. SEM ENROLAÇÃO: proibido abrir com "Oi, gente", "Nesse vídeo eu vou falar sobre...", "Antes de começar...". A primeira frase JÁ É a manchete mais forte do vídeo.
 
 ## ESTRUTURA DO ROTEIRO
 
@@ -138,6 +139,7 @@ Entregue SOMENTE o roteiro falado, sem título, sem duração e sem qualquer inf
 - Tem pelo menos um número específico no roteiro?
 - O CTA dá uma ordem clara e única?
 - Lendo em voz alta, o ritmo é de socos curtos, não de parágrafo de livro?
+- As frases se conectam como uma conversa fluida, sem parecerem uma lista robótica?
 - Removeu título, duração e qualquer informação técnica do texto final?`
 
 
