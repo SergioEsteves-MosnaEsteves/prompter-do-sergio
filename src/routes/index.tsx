@@ -88,6 +88,7 @@ function Index() {
   const [merging, setMerging] = useState(false);
   const [mergeProgress, setMergeProgress] = useState(0);
   const [mergeError, setMergeError] = useState<string | null>(null);
+  const [withOutro, setWithOutro] = useState(false);
   const outroDone = useRef(false);
 
   const search = Route.useSearch();
