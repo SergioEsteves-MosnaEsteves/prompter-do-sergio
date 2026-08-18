@@ -146,6 +146,49 @@ function Index() {
     }
   }, [rec]);
 
+  const triggerDownload = useCallback((url: string, ext: string) => {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `gravacao-${Date.now()}.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }, []);
+
+  const downloadVideo = useCallback(async () => {
+    if (!rec.resultBlob || !rec.resultUrl) return;
+    setMergeError(null);
+
+    if (outroDone.current) {
+      triggerDownload(rec.resultUrl, rec.resultExt);
+      return;
+    }
+
+    setMerging(true);
+    setMergeProgress(0);
+    try {
+      const { appendOutro, fetchOutro, getVideoSize } = await import("@/lib/append-outro");
+      const outro = await fetchOutro();
+      if (!outro) {
+        triggerDownload(rec.resultUrl, rec.resultExt);
+        return;
+      }
+      const size = await getVideoSize(rec.resultBlob);
+      const final = await appendOutro(rec.resultBlob, outro, size, setMergeProgress);
+      outroDone.current = true;
+      rec.replaceResult(final);
+      triggerDownload(URL.createObjectURL(final), "mp4");
+    } catch {
+      setMergeError(
+        "Não foi possível juntar o vídeo de fechamento. Baixando só a gravação.",
+      );
+      triggerDownload(rec.resultUrl, rec.resultExt);
+    } finally {
+      setMerging(false);
+    }
+  }, [rec, triggerDownload]);
+
+
 
 
   useEffect(() => {
