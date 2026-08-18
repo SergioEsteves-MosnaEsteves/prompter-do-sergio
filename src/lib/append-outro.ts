@@ -4,8 +4,9 @@
  */
 
 import { getFFmpeg } from "@/lib/ffmpeg-client";
+import outroAsset from "@/assets/outro-9x16.mp4.asset.json";
 
-export const OUTRO_URL = "/outro/outro-9x16.mp4";
+export const OUTRO_URL = outroAsset.url;
 
 export async function fetchOutro(): Promise<Uint8Array | null> {
   try {
