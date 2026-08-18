@@ -108,7 +108,7 @@ Todo roteiro que você escrever deve usar exclusivamente o estilo de LINGUAGEM M
 
 Siga esta arquitetura obrigatoriamente, marcando cada bloco com o rótulo entre colchetes:
 
-- [GANCHO]: abre com a manchete mais forte de todas — promessa, polêmica, dado chocante ou pergunta impossível de ignorar. Depois, 1 ou 2 frases fluidas que sustentam essa promessa.
+- [GANCHO]: abre com a manchete mais forte de todas — promessa, polêmica, dado chocante ou pergunta impossível de ignorar. Esta é a única frase do bloco; sem frases adicionais.
 - [SUSTENTAÇÃO]: abre com uma manchete que eleva a aposta ou cria identificação, seguida de texto corrido que aproxima a história da vida de quem assiste.
 - [DESENVOLVIMENTO]: cada sub-tema abre com uma mini-manchete e é desenvolvido em texto fluido, com contexto, número e explicação encadeados naturalmente.
 - [VIRADA] (opcional): abre com um "mas" que muda a perspectiva e explica o detalhe em frases corridas.
