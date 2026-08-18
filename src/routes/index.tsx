@@ -552,6 +552,7 @@ function Index() {
           variant="secondary"
           size="lg"
           onClick={() => {
+            outroDone.current = false;
             rec.clearResult();
             openCamera();
           }}
