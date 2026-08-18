@@ -110,6 +110,15 @@ function Index() {
     }
   }, [generate, url, duration, platform]);
 
+  const autoRan = useRef(false);
+  useEffect(() => {
+    if (autoRan.current) return;
+    if (!search.url) return;
+    autoRan.current = true;
+    void generateScript();
+  }, [search.url, generateScript]);
+
+
 
   const convertVideo = useCallback(async () => {
     if (!rec.resultBlob) return;
