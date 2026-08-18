@@ -99,3 +99,19 @@ export async function appendOutro(
     ffmpeg.off("progress", handler);
   }
 }
+
+/** Lê a resolução real do vídeo gravado. */
+export function getVideoSize(blob: Blob): Promise<{ width: number; height: number }> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(blob);
+    const el = document.createElement("video");
+    const done = (w: number, h: number) => {
+      URL.revokeObjectURL(url);
+      resolve({ width: w || 1080, height: h || 1920 });
+    };
+    el.preload = "metadata";
+    el.onloadedmetadata = () => done(el.videoWidth, el.videoHeight);
+    el.onerror = () => done(1080, 1920);
+    el.src = url;
+  });
+}
