@@ -7,6 +7,7 @@ import {
   Download,
   ExternalLink,
   FileVideo,
+  Loader2,
   RectangleHorizontal,
   RectangleVertical,
   RefreshCw,
@@ -355,12 +356,26 @@ function Index() {
             <Button
               type="button"
               variant="secondary"
-              className="w-full"
+              className={`w-full relative overflow-hidden transition-all duration-300 ${
+                generating
+                  ? "animate-pulse ring-2 ring-primary ring-offset-2 ring-offset-background"
+                  : ""
+              }`}
               disabled={url.trim().length === 0 || generating}
               onClick={generateScript}
             >
-              <Sparkles className="mr-2 size-4" />
-              {generating ? "Gerando roteiro..." : "Gerar roteiro"}
+              {generating ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  <span className="relative z-10">Gerando roteiro...</span>
+                  <span className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 size-4" />
+                  Gerar roteiro
+                </>
+              )}
             </Button>
 
             {genError && <p className="text-sm text-destructive">{genError}</p>}
