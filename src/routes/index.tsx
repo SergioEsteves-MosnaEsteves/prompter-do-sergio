@@ -80,9 +80,10 @@ function Index() {
   const [converting, setConverting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [convertError, setConvertError] = useState<string | null>(null);
-  const [url, setUrl] = useState("");
-  const [duration, setDuration] = useState<"30" | "60" | "90">("60");
-  const [platform, setPlatform] = useState<"reels" | "youtube">("reels");
+  const search = Route.useSearch();
+  const [url, setUrl] = useState(search.url ?? "");
+  const [duration, setDuration] = useState<"30" | "60" | "90">(search.duracao ?? "60");
+  const [platform, setPlatform] = useState<"reels" | "youtube">(search.plataforma ?? "reels");
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
 
