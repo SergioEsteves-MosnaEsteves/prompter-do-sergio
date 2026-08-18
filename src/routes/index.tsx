@@ -189,7 +189,7 @@ function Index() {
     } finally {
       setMerging(false);
     }
-  }, [rec, triggerDownload]);
+  }, [rec, triggerDownload, withOutro]);
 
 
 
