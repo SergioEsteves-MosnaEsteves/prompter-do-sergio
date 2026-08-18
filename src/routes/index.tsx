@@ -36,7 +36,12 @@ const searchSchema = z.object({
     .refine((v) => /^https?:\/\//i.test(v), "URL inválida")
     .optional()
     .catch(undefined),
-  duracao: z.enum(["30", "60", "90"]).optional().catch(undefined),
+  duracao: z
+    .union([z.string(), z.number()])
+    .transform((v) => String(v))
+    .pipe(z.enum(["30", "60", "90"]))
+    .optional()
+    .catch(undefined),
   plataforma: z.enum(["reels", "youtube"]).optional().catch(undefined),
 });
 
