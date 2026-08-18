@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -29,7 +30,23 @@ import {
   type Orientation,
 } from "@/components/teleprompter/useRecorder";
 
+const searchSchema = z.object({
+  url: z
+    .string()
+    .refine((v) => /^https?:\/\//i.test(v), "URL inválida")
+    .optional()
+    .catch(undefined),
+  duracao: z
+    .union([z.string(), z.number()])
+    .transform((v) => String(v))
+    .pipe(z.enum(["30", "60", "90"]))
+    .optional()
+    .catch(undefined),
+  plataforma: z.enum(["reels", "youtube"]).optional().catch(undefined),
+});
+
 export const Route = createFileRoute("/")({
+  validateSearch: searchSchema,
   head: () => ({
     meta: [
       { title: "PROMPTER DO SERGIO — Grave vídeos com teleprompter no celular" },
@@ -68,9 +85,10 @@ function Index() {
   const [converting, setConverting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [convertError, setConvertError] = useState<string | null>(null);
-  const [url, setUrl] = useState("");
-  const [duration, setDuration] = useState<"30" | "60" | "90">("60");
-  const [platform, setPlatform] = useState<"reels" | "youtube">("reels");
+  const search = Route.useSearch();
+  const [url, setUrl] = useState(search.url ?? "");
+  const [duration, setDuration] = useState<"30" | "60" | "90">(search.duracao ?? "60");
+  const [platform, setPlatform] = useState<"reels" | "youtube">(search.plataforma ?? "reels");
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
 
@@ -96,6 +114,15 @@ function Index() {
       setGenerating(false);
     }
   }, [generate, url, duration, platform]);
+
+  const autoRan = useRef(false);
+  useEffect(() => {
+    if (autoRan.current) return;
+    if (!search.url) return;
+    autoRan.current = true;
+    void generateScript();
+  }, [search.url, generateScript]);
+
 
 
   const convertVideo = useCallback(async () => {
