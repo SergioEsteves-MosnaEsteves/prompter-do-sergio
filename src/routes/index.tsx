@@ -161,10 +161,11 @@ function Index() {
     if (!rec.resultBlob || !rec.resultUrl) return;
     setMergeError(null);
 
-    if (outroDone.current) {
+    if (!withOutro || outroDone.current) {
       triggerDownload(rec.resultUrl, rec.resultExt);
       return;
     }
+
 
     setMerging(true);
     setMergeProgress(0);
