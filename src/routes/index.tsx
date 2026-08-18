@@ -488,9 +488,24 @@ function Index() {
             {opening ? "Abrindo câmera..." : "Iniciar gravação"}
           </Button>
 
+          <label className="flex items-start gap-3 rounded-xl border border-border bg-card p-4 text-sm text-foreground">
+            <Checkbox
+              checked={withOutro}
+              onCheckedChange={(v) => setWithOutro(v === true)}
+              className="mt-0.5"
+            />
+            <span>
+              Incluir vídeo de fechamento no download
+              <span className="block text-xs text-muted-foreground">
+                Adiciona a vinheta final ao arquivo baixado.
+              </span>
+            </span>
+          </label>
+
           <p className="text-center text-xs text-muted-foreground">
             O teleprompter aparece só na sua tela — ele não fica gravado no vídeo.
           </p>
+
         </section>
       </main>
     );
