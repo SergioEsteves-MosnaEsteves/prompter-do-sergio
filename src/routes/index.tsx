@@ -564,6 +564,7 @@ function Index() {
           type="button"
           variant="ghost"
           onClick={() => {
+            outroDone.current = false;
             rec.clearResult();
             rec.stopStream();
             setStage("setup");
