@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -29,7 +30,18 @@ import {
   type Orientation,
 } from "@/components/teleprompter/useRecorder";
 
+const searchSchema = z.object({
+  url: z
+    .string()
+    .refine((v) => /^https?:\/\//i.test(v), "URL inválida")
+    .optional()
+    .catch(undefined),
+  duracao: z.enum(["30", "60", "90"]).optional().catch(undefined),
+  plataforma: z.enum(["reels", "youtube"]).optional().catch(undefined),
+});
+
 export const Route = createFileRoute("/")({
+  validateSearch: searchSchema,
   head: () => ({
     meta: [
       { title: "PROMPTER DO SERGIO — Grave vídeos com teleprompter no celular" },
