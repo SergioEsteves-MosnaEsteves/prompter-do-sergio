@@ -481,17 +481,23 @@ function Index() {
           </div>
         )}
 
-        <a
-          href={rec.resultUrl}
-          download={`gravacao-${Date.now()}.${rec.resultExt}`}
-          className="inline-flex h-12 w-full items-center justify-center rounded-lg bg-primary text-base font-semibold text-primary-foreground"
+        <Button
+          type="button"
+          size="lg"
+          className="h-12 w-full text-base font-semibold"
+          disabled={merging || converting}
+          onClick={downloadVideo}
         >
           <Download className="mr-2 size-5" />
-          Baixar vídeo {rec.resultExt === "mp4" ? "(MP4)" : "(WebM)"}
-        </a>
+          {merging
+            ? `Montando vídeo... ${Math.round(mergeProgress * 100)}%`
+            : `Baixar vídeo ${rec.resultExt === "mp4" ? "(MP4)" : "(WebM)"}`}
+        </Button>
+        {mergeError && <p className="text-center text-sm text-destructive">{mergeError}</p>}
         <p className="text-center text-xs text-muted-foreground">
           No iPhone: toque em Baixar e depois em Salvar em Vídeos.
         </p>
+
 
         <Button
           type="button"
