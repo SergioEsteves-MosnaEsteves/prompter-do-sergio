@@ -3,32 +3,8 @@
  * usando ffmpeg compilado em WebAssembly. Nada é enviado para servidores.
  */
 
-const CORE_BASE = "https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd";
+import { getFFmpeg } from "@/lib/ffmpeg-client";
 
-type FFmpegInstance = import("@ffmpeg/ffmpeg").FFmpeg;
-
-let ffmpegPromise: Promise<FFmpegInstance> | null = null;
-
-async function getFFmpeg(): Promise<FFmpegInstance> {
-  if (!ffmpegPromise) {
-    ffmpegPromise = (async () => {
-      const [{ FFmpeg }, { toBlobURL }] = await Promise.all([
-        import("@ffmpeg/ffmpeg"),
-        import("@ffmpeg/util"),
-      ]);
-      const ffmpeg = new FFmpeg();
-      await ffmpeg.load({
-        coreURL: await toBlobURL(`${CORE_BASE}/ffmpeg-core.js`, "text/javascript"),
-        wasmURL: await toBlobURL(`${CORE_BASE}/ffmpeg-core.wasm`, "application/wasm"),
-      });
-      return ffmpeg;
-    })().catch((err) => {
-      ffmpegPromise = null;
-      throw err;
-    });
-  }
-  return ffmpegPromise;
-}
 
 export async function convertToMp4(
   input: Blob,
