@@ -85,6 +85,11 @@ function Index() {
   const [converting, setConverting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [convertError, setConvertError] = useState<string | null>(null);
+  const [merging, setMerging] = useState(false);
+  const [mergeProgress, setMergeProgress] = useState(0);
+  const [mergeError, setMergeError] = useState<string | null>(null);
+  const outroDone = useRef(false);
+
   const search = Route.useSearch();
   const [url, setUrl] = useState(search.url ?? "");
   const [duration, setDuration] = useState<"30" | "60" | "90">(search.duracao ?? "60");
