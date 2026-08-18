@@ -85,6 +85,11 @@ function Index() {
   const [converting, setConverting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [convertError, setConvertError] = useState<string | null>(null);
+  const [merging, setMerging] = useState(false);
+  const [mergeProgress, setMergeProgress] = useState(0);
+  const [mergeError, setMergeError] = useState<string | null>(null);
+  const outroDone = useRef(false);
+
   const search = Route.useSearch();
   const [url, setUrl] = useState(search.url ?? "");
   const [duration, setDuration] = useState<"30" | "60" | "90">(search.duracao ?? "60");
@@ -140,6 +145,49 @@ function Index() {
       setConverting(false);
     }
   }, [rec]);
+
+  const triggerDownload = useCallback((url: string, ext: string) => {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `gravacao-${Date.now()}.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }, []);
+
+  const downloadVideo = useCallback(async () => {
+    if (!rec.resultBlob || !rec.resultUrl) return;
+    setMergeError(null);
+
+    if (outroDone.current) {
+      triggerDownload(rec.resultUrl, rec.resultExt);
+      return;
+    }
+
+    setMerging(true);
+    setMergeProgress(0);
+    try {
+      const { appendOutro, fetchOutro, getVideoSize } = await import("@/lib/append-outro");
+      const outro = await fetchOutro();
+      if (!outro) {
+        triggerDownload(rec.resultUrl, rec.resultExt);
+        return;
+      }
+      const size = await getVideoSize(rec.resultBlob);
+      const final = await appendOutro(rec.resultBlob, outro, size, setMergeProgress);
+      outroDone.current = true;
+      rec.replaceResult(final);
+      triggerDownload(URL.createObjectURL(final), "mp4");
+    } catch {
+      setMergeError(
+        "Não foi possível juntar o vídeo de fechamento. Baixando só a gravação.",
+      );
+      triggerDownload(rec.resultUrl, rec.resultExt);
+    } finally {
+      setMerging(false);
+    }
+  }, [rec, triggerDownload]);
+
 
 
 
@@ -481,23 +529,30 @@ function Index() {
           </div>
         )}
 
-        <a
-          href={rec.resultUrl}
-          download={`gravacao-${Date.now()}.${rec.resultExt}`}
-          className="inline-flex h-12 w-full items-center justify-center rounded-lg bg-primary text-base font-semibold text-primary-foreground"
+        <Button
+          type="button"
+          size="lg"
+          className="h-12 w-full text-base font-semibold"
+          disabled={merging || converting}
+          onClick={downloadVideo}
         >
           <Download className="mr-2 size-5" />
-          Baixar vídeo {rec.resultExt === "mp4" ? "(MP4)" : "(WebM)"}
-        </a>
+          {merging
+            ? `Montando vídeo... ${Math.round(mergeProgress * 100)}%`
+            : `Baixar vídeo ${rec.resultExt === "mp4" ? "(MP4)" : "(WebM)"}`}
+        </Button>
+        {mergeError && <p className="text-center text-sm text-destructive">{mergeError}</p>}
         <p className="text-center text-xs text-muted-foreground">
           No iPhone: toque em Baixar e depois em Salvar em Vídeos.
         </p>
+
 
         <Button
           type="button"
           variant="secondary"
           size="lg"
           onClick={() => {
+            outroDone.current = false;
             rec.clearResult();
             openCamera();
           }}
@@ -509,6 +564,7 @@ function Index() {
           type="button"
           variant="ghost"
           onClick={() => {
+            outroDone.current = false;
             rec.clearResult();
             rec.stopStream();
             setStage("setup");
