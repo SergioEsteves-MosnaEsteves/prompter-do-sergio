@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
 import { generateScriptFromUrl } from "@/lib/script.functions";
 import {
   TeleprompterOverlay,
@@ -88,6 +89,7 @@ function Index() {
   const [merging, setMerging] = useState(false);
   const [mergeProgress, setMergeProgress] = useState(0);
   const [mergeError, setMergeError] = useState<string | null>(null);
+  const [withOutro, setWithOutro] = useState(false);
   const outroDone = useRef(false);
 
   const search = Route.useSearch();
@@ -159,10 +161,11 @@ function Index() {
     if (!rec.resultBlob || !rec.resultUrl) return;
     setMergeError(null);
 
-    if (outroDone.current) {
+    if (!withOutro || outroDone.current) {
       triggerDownload(rec.resultUrl, rec.resultExt);
       return;
     }
+
 
     setMerging(true);
     setMergeProgress(0);
@@ -186,7 +189,7 @@ function Index() {
     } finally {
       setMerging(false);
     }
-  }, [rec, triggerDownload]);
+  }, [rec, triggerDownload, withOutro]);
 
 
 
@@ -488,9 +491,24 @@ function Index() {
             {opening ? "Abrindo câmera..." : "Iniciar gravação"}
           </Button>
 
+          <label className="flex items-start gap-3 rounded-xl border border-border bg-card p-4 text-sm text-foreground">
+            <Checkbox
+              checked={withOutro}
+              onCheckedChange={(v) => setWithOutro(v === true)}
+              className="mt-0.5"
+            />
+            <span>
+              Incluir vídeo de fechamento no download
+              <span className="block text-xs text-muted-foreground">
+                Adiciona a vinheta final ao arquivo baixado.
+              </span>
+            </span>
+          </label>
+
           <p className="text-center text-xs text-muted-foreground">
             O teleprompter aparece só na sua tela — ele não fica gravado no vídeo.
           </p>
+
         </section>
       </main>
     );
