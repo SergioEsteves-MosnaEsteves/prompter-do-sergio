@@ -222,11 +222,12 @@ function Index() {
           ? ` Motivo técnico: ${detail}`
           : "";
       setMergeError(`${base}${hint} Baixando só a gravação.`);
-      triggerDownload(rec.resultUrl, rec.resultExt);
+      await saveBlob(rec.resultBlob, rec.resultExt, rec.resultUrl);
     } finally {
       setMerging(false);
     }
-  }, [rec, triggerDownload, withOutro]);
+  }, [rec, saveBlob, withOutro]);
+
 
 
 
