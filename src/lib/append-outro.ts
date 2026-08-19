@@ -22,16 +22,36 @@ export class MergeError extends Error {
   }
 }
 
-export async function fetchOutro(): Promise<Uint8Array | null> {
+function errorDetail(error: unknown): string {
+  if (error instanceof Error && error.message) return error.message;
+  if (typeof error === "string" && error) return error;
+  return lastError();
+}
+
+export async function fetchOutro(): Promise<Uint8Array> {
   try {
     const res = await fetch(OUTRO_URL);
-    if (!res.ok) return null;
+    if (!res.ok) {
+      throw new MergeError(
+        "Falha ao carregar o vídeo de fechamento.",
+        `O servidor respondeu HTTP ${res.status}.`,
+      );
+    }
     const buf = new Uint8Array(await res.arrayBuffer());
     // Evita arquivos placeholder/HTML servidos pelo dev server
-    if (buf.byteLength < 1024) return null;
+    if (buf.byteLength < 1024) {
+      throw new MergeError(
+        "O vídeo de fechamento recebido é inválido.",
+        `O arquivo tem somente ${buf.byteLength} bytes.`,
+      );
+    }
     return buf;
-  } catch {
-    return null;
+  } catch (error) {
+    if (error instanceof MergeError) throw error;
+    throw new MergeError(
+      "Falha de rede ao carregar o vídeo de fechamento.",
+      errorDetail(error),
+    );
   }
 }
 
@@ -128,7 +148,15 @@ export async function appendOutro(
   size: { width: number; height: number },
   onProgress?: (ratio: number) => void,
 ): Promise<Blob> {
-  const ffmpeg = await getFFmpeg();
+  let ffmpeg: Awaited<ReturnType<typeof getFFmpeg>>;
+  try {
+    ffmpeg = await getFFmpeg();
+  } catch (error) {
+    throw new MergeError(
+      "Falha ao iniciar o processador de vídeo.",
+      errorDetail(error),
+    );
+  }
   const { w, h } = workSize(size);
 
   let stage = 0; // 0: gravação, 1: fechamento, 2: junção
@@ -152,23 +180,30 @@ export async function appendOutro(
   };
 
   try {
-    await ffmpeg.writeFile(recName, new Uint8Array(await recording.arrayBuffer()));
-    await ffmpeg.writeFile(outroName, outro);
+    try {
+      await ffmpeg.writeFile(recName, new Uint8Array(await recording.arrayBuffer()));
+      await ffmpeg.writeFile(outroName, outro);
+    } catch (error) {
+      throw new MergeError(
+        "Falha ao copiar os vídeos para o processador.",
+        errorDetail(error),
+      );
+    }
 
     try {
       stage = 0;
       await normalize(ffmpeg, recName, recNorm, w, h);
       await ffmpeg.deleteFile(recName).catch(() => {});
-    } catch {
-      throw new MergeError("Falha ao preparar a gravação para a junção.", lastError());
+    } catch (error) {
+      throw new MergeError("Falha ao converter a gravação antes da junção.", errorDetail(error));
     }
 
     try {
       stage = 1;
       await normalize(ffmpeg, outroName, outroNorm, w, h);
       await ffmpeg.deleteFile(outroName).catch(() => {});
-    } catch {
-      throw new MergeError("Falha ao preparar o vídeo de fechamento.", lastError());
+    } catch (error) {
+      throw new MergeError("Falha ao converter o vídeo de fechamento.", errorDetail(error));
     }
 
     try {
@@ -192,11 +227,16 @@ export async function appendOutro(
         "+faststart",
         outputName,
       ]);
-    } catch {
-      throw new MergeError("Falha ao juntar os dois vídeos.", lastError());
+    } catch (error) {
+      throw new MergeError("Falha na concatenação dos dois vídeos.", errorDetail(error));
     }
 
-    const data = (await ffmpeg.readFile(outputName)) as Uint8Array;
+    let data: Uint8Array;
+    try {
+      data = (await ffmpeg.readFile(outputName)) as Uint8Array;
+    } catch (error) {
+      throw new MergeError("Falha ao ler o vídeo final processado.", errorDetail(error));
+    }
     if (!data || data.byteLength < 1024) {
       throw new MergeError("O arquivo final saiu vazio.", lastError());
     }
