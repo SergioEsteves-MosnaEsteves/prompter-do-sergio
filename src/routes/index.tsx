@@ -623,18 +623,24 @@ function Index() {
           size="lg"
           className="h-12 w-full text-base font-semibold"
           disabled={merging || converting}
-          onClick={downloadVideo}
+          onClick={readyFile ? saveReadyFile : prepareFile}
         >
           <Download className="mr-2 size-5" />
           {merging
             ? `Montando vídeo... ${Math.round(mergeProgress * 100)}%`
-            : `Salvar vídeo ${rec.resultExt === "mp4" ? "(MP4)" : "(WebM)"}`}
-
+            : converting
+              ? `Convertendo... ${Math.round(progress * 100)}%`
+              : readyFile
+                ? "Salvar nas Fotos"
+                : "Preparar vídeo para salvar"}
         </Button>
         {mergeError && <p className="text-center text-sm text-destructive">{mergeError}</p>}
         <p className="text-center text-xs text-muted-foreground">
-          No celular: toque em Salvar vídeo e escolha "Salvar vídeo" para enviar direto às Fotos.
+          {readyFile
+            ? 'Toque em "Salvar nas Fotos" e escolha "Salvar vídeo" na folha de compartilhamento do celular.'
+            : "Primeiro prepare o vídeo (MP4). Depois o botão abre a opção de salvar direto nas Fotos."}
         </p>
+
 
 
         <Button
