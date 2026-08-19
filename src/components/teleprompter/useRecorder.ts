@@ -128,14 +128,12 @@ async function buildOrientedStream(
     window.setTimeout(resolve, 1500);
   });
 
-  const srcW = video.videoWidth || 1280;
-  const srcH = video.videoHeight || 720;
   const portrait = orientation === "vertical";
-  // Proporção alvo fixa: não depende do sensor (webcams 4:3 dariam 3:4).
-  const longSide = Math.min(1920, Math.max(srcW, srcH));
-  const even = (n: number) => Math.max(2, Math.round(n) & ~1);
-  const outW = portrait ? even((longSide * 9) / 16) : even(longSide);
-  const outH = portrait ? even(longSide) : even((longSide * 9) / 16);
+  // Tamanho fixo, igual ao do vídeo de fechamento já pré-processado.
+  // Assim a junção final não precisa recomprimir nada.
+  const outW = portrait ? 1080 : 1920;
+  const outH = portrait ? 1920 : 1080;
+
 
 
   const canvas = document.createElement("canvas");
@@ -196,6 +194,9 @@ export function useRecorder() {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultExt, setResultExt] = useState("webm");
   const [resultBlob, setResultBlob] = useState<Blob | null>(null);
+  const [hadAudio, setHadAudio] = useState(true);
+  const [resultPortrait, setResultPortrait] = useState(true);
+
 
   const [zoom, setZoomState] = useState(1);
   const [maxZoom, setMaxZoom] = useState(4);
@@ -349,10 +350,13 @@ export function useRecorder() {
       return;
     }
     const mimeType = pickMimeType();
+    setHadAudio(out.getAudioTracks().length > 0);
+    setResultPortrait(orientationRef.current === "vertical");
     try {
       // Grava exatamente o stream mostrado na prévia.
       const rec = new MediaRecorder(out, mimeType ? { mimeType } : undefined);
       chunksRef.current = [];
+
       rec.ondataavailable = (ev) => {
         if (ev.data.size > 0) chunksRef.current.push(ev.data);
       };
@@ -430,6 +434,10 @@ export function useRecorder() {
     resultUrl,
     resultExt,
     resultBlob,
+    /** true quando a gravação tem faixa de áudio (evita uma passagem do ffmpeg). */
+    hadAudio,
+    /** orientação usada na gravação, define o fechamento correspondente. */
+    resultPortrait,
     replaceResult,
     start,
     stopStream,
@@ -444,5 +452,6 @@ export function useRecorder() {
     setFit,
     aspect,
   };
+
 
 }

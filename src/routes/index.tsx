@@ -6,7 +6,6 @@ import {
   Camera,
   Download,
   ExternalLink,
-  FileVideo,
   Loader2,
   RectangleHorizontal,
   RectangleVertical,
@@ -135,21 +134,6 @@ function Index() {
 
 
 
-  const convertVideo = useCallback(async () => {
-    if (!rec.resultBlob) return;
-    setConverting(true);
-    setConvertError(null);
-    setProgress(0);
-    try {
-      const { convertToMp4 } = await import("@/lib/convert-to-mp4");
-      const mp4 = await convertToMp4(rec.resultBlob, setProgress);
-      rec.replaceResult(mp4);
-    } catch {
-      setConvertError("Não foi possível converter. Tente um vídeo mais curto.");
-    } finally {
-      setConverting(false);
-    }
-  }, [rec]);
 
   const triggerDownload = useCallback((blob: Blob, ext: string) => {
     const url = URL.createObjectURL(blob);
@@ -190,10 +174,18 @@ function Index() {
       setMerging(true);
       setMergeProgress(0);
       try {
-        const { appendOutro, fetchOutro, getVideoSize } = await import("@/lib/append-outro");
-        const outro = await fetchOutro();
-        const size = await getVideoSize(blob);
-        blob = await appendOutro(blob, outro, size, setMergeProgress);
+        const { appendOutro, fetchOutro, getVideoSize, targetSize } = await import(
+          "@/lib/append-outro"
+        );
+        const portrait = rec.resultPortrait;
+        const size = targetSize(portrait);
+        const [outro, real] = await Promise.all([fetchOutro(portrait), getVideoSize(blob)]);
+        const canCopy =
+          rec.resultExt === "mp4" && real.width === size.w && real.height === size.h;
+        blob = await appendOutro(blob, outro, size, setMergeProgress, {
+          canCopy,
+          hasAudio: rec.hadAudio,
+        });
         outroDone.current = true;
         rec.replaceResult(blob);
       } catch (err) {
@@ -226,6 +218,7 @@ function Index() {
     );
   }, [rec, withOutro]);
 
+
   const saveReadyFile = useCallback(() => {
     const file = readyFile;
     if (!file) return;
@@ -254,6 +247,30 @@ function Index() {
   useEffect(() => {
     if (stage !== "preview") setReadyFile(null);
   }, [stage]);
+
+  // Aquece o processador de vídeo e o fechamento enquanto o usuário grava,
+  // para que a montagem não comece do zero na hora de salvar.
+  useEffect(() => {
+    if (stage !== "camera") return;
+    void (async () => {
+      const [{ warmFFmpeg }, { fetchOutro }] = await Promise.all([
+        import("@/lib/ffmpeg-client"),
+        import("@/lib/append-outro"),
+      ]);
+      warmFFmpeg();
+      void fetchOutro(true).catch(() => {});
+    })();
+  }, [stage]);
+
+  // Assim que a prévia aparece, já monta o arquivo final em segundo plano.
+  const autoPrepared = useRef<string | null>(null);
+  useEffect(() => {
+    if (stage !== "preview" || !rec.resultUrl) return;
+    if (autoPrepared.current === rec.resultUrl) return;
+    autoPrepared.current = rec.resultUrl;
+    void prepareFile();
+  }, [stage, rec.resultUrl, prepareFile]);
+
 
   useEffect(() => {
     if (videoRef.current && rec.stream) {
@@ -600,26 +617,10 @@ function Index() {
           className="w-full rounded-xl border border-border bg-black"
         />
 
-        {rec.resultExt !== "mp4" && (
-          <div className="space-y-3 rounded-lg border border-border bg-card p-3 text-sm">
-            <p className="text-muted-foreground">
-              Este navegador gravou em WebM, formato que a galeria do celular não aceita.
-              Converta para MP4 antes de salvar.
-            </p>
-            <Button
-              type="button"
-              variant="secondary"
-              className="w-full"
-              disabled={converting}
-              onClick={convertVideo}
-            >
-              <FileVideo className="mr-2 size-4" />
-              {converting
-                ? `Convertendo... ${Math.round(progress * 100)}%`
-                : "Converter para MP4"}
-            </Button>
-            {convertError && <p className="text-destructive">{convertError}</p>}
-          </div>
+        {convertError && (
+          <p className="rounded-lg border border-border bg-card p-3 text-sm text-destructive">
+            {convertError}
+          </p>
         )}
 
         <Button
@@ -642,8 +643,9 @@ function Index() {
         <p className="text-center text-xs text-muted-foreground">
           {readyFile
             ? 'Toque em "Salvar nas Fotos" e escolha "Salvar vídeo" na folha de compartilhamento do celular.'
-            : "Primeiro prepare o vídeo (MP4). Depois o botão abre a opção de salvar direto nas Fotos."}
+            : "O vídeo já está sendo montado automaticamente. Assim que ficar pronto, o botão salva direto nas Fotos."}
         </p>
+
 
 
 
