@@ -128,14 +128,12 @@ async function buildOrientedStream(
     window.setTimeout(resolve, 1500);
   });
 
-  const srcW = video.videoWidth || 1280;
-  const srcH = video.videoHeight || 720;
   const portrait = orientation === "vertical";
-  // Proporção alvo fixa: não depende do sensor (webcams 4:3 dariam 3:4).
-  const longSide = Math.min(1920, Math.max(srcW, srcH));
-  const even = (n: number) => Math.max(2, Math.round(n) & ~1);
-  const outW = portrait ? even((longSide * 9) / 16) : even(longSide);
-  const outH = portrait ? even(longSide) : even((longSide * 9) / 16);
+  // Tamanho fixo, igual ao do vídeo de fechamento já pré-processado.
+  // Assim a junção final não precisa recomprimir nada.
+  const outW = portrait ? 1080 : 1920;
+  const outH = portrait ? 1920 : 1080;
+
 
 
   const canvas = document.createElement("canvas");
