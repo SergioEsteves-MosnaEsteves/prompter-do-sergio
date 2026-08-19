@@ -252,8 +252,8 @@ function Index() {
 
 
   useEffect(() => {
-    setReadyFile(null);
-  }, [rec.resultUrl]);
+    if (stage !== "preview") setReadyFile(null);
+  }, [stage]);
 
   useEffect(() => {
     if (videoRef.current && rec.stream) {
