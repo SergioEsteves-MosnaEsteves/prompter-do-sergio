@@ -174,6 +174,9 @@ function Index() {
       const { appendOutro, fetchOutro, getVideoSize } = await import("@/lib/append-outro");
       const outro = await fetchOutro();
       if (!outro) {
+        setMergeError(
+          "Não consegui baixar o vídeo de fechamento. Baixando só a gravação.",
+        );
         triggerDownload(rec.resultUrl, rec.resultExt);
         return;
       }
@@ -182,10 +185,24 @@ function Index() {
       outroDone.current = true;
       rec.replaceResult(final);
       triggerDownload(URL.createObjectURL(final), "mp4");
-    } catch {
-      setMergeError(
-        "Não foi possível juntar o vídeo de fechamento. Baixando só a gravação.",
-      );
+    } catch (err) {
+      console.error("[outro] falha na junção:", err);
+      const detail =
+        err && typeof err === "object" && "detail" in err
+          ? String((err as { detail: unknown }).detail)
+          : err instanceof Error
+            ? err.message
+            : "";
+      const base =
+        err instanceof Error && err.name === "MergeError"
+          ? err.message
+          : "Não foi possível juntar o vídeo de fechamento.";
+      const hint = /memory|abort|alloc/i.test(detail)
+        ? " Memória insuficiente no navegador para processar este vídeo."
+        : detail
+          ? ` Detalhe: ${detail}`
+          : "";
+      setMergeError(`${base}${hint} Baixando só a gravação.`);
       triggerDownload(rec.resultUrl, rec.resultExt);
     } finally {
       setMerging(false);
