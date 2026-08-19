@@ -350,10 +350,13 @@ export function useRecorder() {
       return;
     }
     const mimeType = pickMimeType();
+    setHadAudio(out.getAudioTracks().length > 0);
+    setResultPortrait(orientationRef.current === "vertical");
     try {
       // Grava exatamente o stream mostrado na prévia.
       const rec = new MediaRecorder(out, mimeType ? { mimeType } : undefined);
       chunksRef.current = [];
+
       rec.ondataavailable = (ev) => {
         if (ev.data.size > 0) chunksRef.current.push(ev.data);
       };
