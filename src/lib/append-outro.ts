@@ -1,16 +1,27 @@
 /**
  * Junta a gravação com o vídeo de fechamento (assinatura) num único MP4,
  * processado no próprio aparelho com ffmpeg.wasm.
+ *
+ * Estratégia de velocidade:
+ * - o fechamento já vem pré-processado no formato de trabalho (1080x1920 ou
+ *   1920x1080, 30fps CFR, H.264 + AAC 48kHz), então nunca é recodificado;
+ * - a gravação é apenas remuxada (`-c copy`) quando já sai em MP4/H.264 no
+ *   mesmo tamanho; só cai na recodificação completa quando necessário;
+ * - a presença de áudio vem do gravador, evitando passagens de inspeção.
  */
 
 import { clearFFmpegLog, getFFmpeg, getFFmpegLog } from "@/lib/ffmpeg-client";
-import outroAsset from "@/assets/outro-9x16.mp4.asset.json";
+import outroPortraitAsset from "@/assets/outro-1080x1920.mp4.asset.json";
+import outroLandscapeAsset from "@/assets/outro-1920x1080.mp4.asset.json";
 
-export const OUTRO_URL = outroAsset.url;
+export const OUTRO_URL = outroPortraitAsset.url;
 
-/** Limite de trabalho para não estourar memória no navegador/celular. */
-const MAX_W = 1080;
-const MAX_H = 1920;
+export type WorkSize = { w: number; h: number };
+
+/** Tamanho de trabalho: igual ao do fechamento pré-processado. */
+export function targetSize(portrait: boolean): WorkSize {
+  return portrait ? { w: 1080, h: 1920 } : { w: 1920, h: 1080 };
+}
 
 export class MergeError extends Error {
   constructor(
@@ -28,58 +39,41 @@ function errorDetail(error: unknown): string {
   return lastError();
 }
 
-export async function fetchOutro(): Promise<Uint8Array> {
-  try {
-    const res = await fetch(OUTRO_URL);
-    if (!res.ok) {
-      throw new MergeError(
-        "Falha ao carregar o vídeo de fechamento.",
-        `O servidor respondeu HTTP ${res.status}.`,
-      );
-    }
-    const buf = new Uint8Array(await res.arrayBuffer());
-    // Evita arquivos placeholder/HTML servidos pelo dev server
-    if (buf.byteLength < 1024) {
-      throw new MergeError(
-        "O vídeo de fechamento recebido é inválido.",
-        `O arquivo tem somente ${buf.byteLength} bytes.`,
-      );
-    }
-    return buf;
-  } catch (error) {
-    if (error instanceof MergeError) throw error;
-    throw new MergeError(
-      "Falha de rede ao carregar o vídeo de fechamento.",
-      errorDetail(error),
-    );
+const outroCache = new Map<string, Promise<Uint8Array>>();
+
+/** Baixa o fechamento já normalizado (com cache entre montagens). */
+export function fetchOutro(portrait = true): Promise<Uint8Array> {
+  const url = portrait ? outroPortraitAsset.url : outroLandscapeAsset.url;
+  let pending = outroCache.get(url);
+  if (!pending) {
+    pending = (async () => {
+      const res = await fetch(url).catch((error: unknown) => {
+        throw new MergeError(
+          "Falha de rede ao carregar o vídeo de fechamento.",
+          errorDetail(error),
+        );
+      });
+      if (!res.ok) {
+        throw new MergeError(
+          "Falha ao carregar o vídeo de fechamento.",
+          `O servidor respondeu HTTP ${res.status}.`,
+        );
+      }
+      const buf = new Uint8Array(await res.arrayBuffer());
+      if (buf.byteLength < 1024) {
+        throw new MergeError(
+          "O vídeo de fechamento recebido é inválido.",
+          `O arquivo tem somente ${buf.byteLength} bytes.`,
+        );
+      }
+      return buf;
+    })().catch((err: unknown) => {
+      outroCache.delete(url);
+      throw err;
+    });
+    outroCache.set(url, pending);
   }
-}
-
-function even(n: number) {
-  return Math.max(2, Math.round(n) & ~1);
-}
-
-/** Reduz o alvo para caber no limite de trabalho, mantendo a proporção. */
-function workSize(size: { width: number; height: number }) {
-  const w = size.width || 1080;
-  const h = size.height || 1920;
-  const ratio = Math.min(1, MAX_W / w, MAX_H / h);
-  return { w: even(w * ratio), h: even(h * ratio) };
-}
-
-/** Descobre se o arquivo tem faixa de áudio, lendo o log do ffmpeg. */
-async function hasAudio(
-  ffmpeg: Awaited<ReturnType<typeof getFFmpeg>>,
-  name: string,
-): Promise<boolean> {
-  clearFFmpegLog();
-  try {
-    // Sem arquivo de saída o ffmpeg apenas imprime as informações dos streams.
-    await ffmpeg.exec(["-hide_banner", "-i", name]);
-  } catch {
-    /* esperado: "At least one output file must be specified" */
-  }
-  return getFFmpegLog().some((line) => /Stream #\d+:\d+.*: Audio:/.test(line));
+  return pending;
 }
 
 function lastError(): string {
@@ -88,21 +82,44 @@ function lastError(): string {
   return (err ?? log[log.length - 1] ?? "erro desconhecido").slice(0, 300);
 }
 
-/** Normaliza um arquivo: resolução alvo, 30fps, H.264 + AAC estéreo 48kHz. */
-async function normalize(
+/** Remux rápido: mantém os fluxos como estão, só arruma o container. */
+async function remux(
+  ffmpeg: Awaited<ReturnType<typeof getFFmpeg>>,
+  input: string,
+  output: string,
+) {
+  clearFFmpegLog();
+  await ffmpeg.exec([
+    "-hide_banner",
+    "-fflags",
+    "+genpts",
+    "-i",
+    input,
+    "-c",
+    "copy",
+    "-video_track_timescale",
+    "30000",
+    "-avoid_negative_ts",
+    "make_zero",
+    "-movflags",
+    "+faststart",
+    output,
+  ]);
+}
+
+/** Recodifica para o formato de trabalho: resolução alvo, 30fps CFR, H.264 + AAC. */
+async function reencode(
   ffmpeg: Awaited<ReturnType<typeof getFFmpeg>>,
   input: string,
   output: string,
   w: number,
   h: number,
+  withAudio: boolean,
 ) {
-  const withAudio = await hasAudio(ffmpeg, input);
   const vf =
     `scale=${w}:${h}:force_original_aspect_ratio=decrease,` +
     `pad=${w}:${h}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1`;
 
-  // A gravação do navegador tem taxa de quadros variável e o áudio corre em
-  // tempo real: sem forçar CFR e reamostrar o áudio, os dois desencontram.
   const args = ["-hide_banner", "-fflags", "+genpts", "-i", input];
   if (!withAudio) {
     args.push("-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=48000");
@@ -125,8 +142,12 @@ async function normalize(
     "libx264",
     "-preset",
     "ultrafast",
+    "-tune",
+    "zerolatency",
+    "-threads",
+    "0",
     "-crf",
-    "23",
+    "26",
     "-pix_fmt",
     "yuv420p",
     "-c:a",
@@ -148,44 +169,48 @@ async function normalize(
   await ffmpeg.exec(args);
 }
 
+export type AppendOptions = {
+  /** true quando a gravação já é MP4/H.264 no tamanho alvo (permite remux). */
+  canCopy?: boolean;
+  /** true quando a gravação tem faixa de áudio. */
+  hasAudio?: boolean;
+};
 
 /**
- * Normaliza os dois vídeos para o mesmo formato e concatena.
- * Retorna um MP4 pronto para download.
+ * Junta gravação + fechamento e devolve um MP4 pronto para salvar.
  */
 export async function appendOutro(
   recording: Blob,
   outro: Uint8Array,
-  size: { width: number; height: number },
+  size: WorkSize,
   onProgress?: (ratio: number) => void,
+  options: AppendOptions = {},
 ): Promise<Blob> {
+  const { canCopy = false, hasAudio = true } = options;
   let ffmpeg: Awaited<ReturnType<typeof getFFmpeg>>;
   try {
     ffmpeg = await getFFmpeg();
   } catch (error) {
-    throw new MergeError(
-      "Falha ao iniciar o processador de vídeo.",
-      errorDetail(error),
-    );
+    throw new MergeError("Falha ao iniciar o processador de vídeo.", errorDetail(error));
   }
-  const { w, h } = workSize(size);
+  const { w, h } = size;
 
-  let stage = 0; // 0: gravação, 1: fechamento, 2: junção
+  // duas etapas: preparar a gravação e concatenar
+  let stage = 0;
   const handler = ({ progress }: { progress: number }) => {
     const p = Math.min(1, Math.max(0, progress));
-    onProgress?.(Math.min(1, (stage + p) / 3));
+    onProgress?.(Math.min(1, (stage + p) / 2));
   };
   ffmpeg.on("progress", handler);
 
   const recName = "rec-input";
-  const outroName = "outro-input.mp4";
-  const recNorm = "rec-norm.mp4";
   const outroNorm = "outro-norm.mp4";
+  const recNorm = "rec-norm.mp4";
   const listName = "concat-list.txt";
   const outputName = "final.mp4";
 
   const cleanup = async () => {
-    for (const f of [recName, outroName, recNorm, outroNorm, listName, outputName]) {
+    for (const f of [recName, recNorm, listName, outputName]) {
       await ffmpeg.deleteFile(f).catch(() => {});
     }
   };
@@ -193,32 +218,31 @@ export async function appendOutro(
   try {
     try {
       await ffmpeg.writeFile(recName, new Uint8Array(await recording.arrayBuffer()));
-      await ffmpeg.writeFile(outroName, outro);
+      await ffmpeg.writeFile(outroNorm, outro);
     } catch (error) {
-      throw new MergeError(
-        "Falha ao copiar os vídeos para o processador.",
-        errorDetail(error),
-      );
+      throw new MergeError("Falha ao copiar os vídeos para o processador.", errorDetail(error));
     }
 
+    let copied = canCopy && hasAudio;
     try {
       stage = 0;
-      await normalize(ffmpeg, recName, recNorm, w, h);
+      if (copied) {
+        try {
+          await remux(ffmpeg, recName, recNorm);
+        } catch {
+          copied = false;
+          await ffmpeg.deleteFile(recNorm).catch(() => {});
+          await reencode(ffmpeg, recName, recNorm, w, h, hasAudio);
+        }
+      } else {
+        await reencode(ffmpeg, recName, recNorm, w, h, hasAudio);
+      }
       await ffmpeg.deleteFile(recName).catch(() => {});
     } catch (error) {
-      throw new MergeError("Falha ao converter a gravação antes da junção.", errorDetail(error));
+      throw new MergeError("Falha ao preparar a gravação antes da junção.", errorDetail(error));
     }
 
-    try {
-      stage = 1;
-      await normalize(ffmpeg, outroName, outroNorm, w, h);
-      await ffmpeg.deleteFile(outroName).catch(() => {});
-    } catch (error) {
-      throw new MergeError("Falha ao converter o vídeo de fechamento.", errorDetail(error));
-    }
-
-    try {
-      stage = 2;
+    const concat = async () => {
       await ffmpeg.writeFile(
         listName,
         new TextEncoder().encode(`file '${recNorm}'\nfile '${outroNorm}'\n`),
@@ -238,16 +262,33 @@ export async function appendOutro(
         "+faststart",
         outputName,
       ]);
-    } catch (error) {
-      throw new MergeError("Falha na concatenação dos dois vídeos.", errorDetail(error));
-    }
+    };
 
-    let data: Uint8Array;
+    let data: Uint8Array | null = null;
     try {
+      stage = 1;
+      await concat();
       data = (await ffmpeg.readFile(outputName)) as Uint8Array;
     } catch (error) {
-      throw new MergeError("Falha ao ler o vídeo final processado.", errorDetail(error));
+      if (!copied) throw new MergeError("Falha na concatenação dos dois vídeos.", errorDetail(error));
+      data = null;
     }
+
+    // O remux rápido pode gerar parâmetros incompatíveis com a concatenação
+    // direta; nesse caso refazemos a gravação recodificada e tentamos de novo.
+    if ((!data || data.byteLength < 1024) && copied) {
+      try {
+        await ffmpeg.deleteFile(recNorm).catch(() => {});
+        await ffmpeg.deleteFile(outputName).catch(() => {});
+        await ffmpeg.writeFile(recName, new Uint8Array(await recording.arrayBuffer()));
+        await reencode(ffmpeg, recName, recNorm, w, h, hasAudio);
+        await concat();
+        data = (await ffmpeg.readFile(outputName)) as Uint8Array;
+      } catch (error) {
+        throw new MergeError("Falha na concatenação dos dois vídeos.", errorDetail(error));
+      }
+    }
+
     if (!data || data.byteLength < 1024) {
       throw new MergeError("O arquivo final saiu vazio.", lastError());
     }
