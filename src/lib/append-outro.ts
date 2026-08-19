@@ -99,9 +99,13 @@ async function normalize(
   const withAudio = await hasAudio(ffmpeg, input);
   const vf =
     `scale=${w}:${h}:force_original_aspect_ratio=decrease,` +
-    `pad=${w}:${h}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1,fps=30`;
+    `pad=${w}:${h}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1`;
 
-  const args = ["-hide_banner", "-i", input];
+  // A gravação do navegador tem taxa de quadros variável e o áudio corre em
+  // tempo real: sem forçar CFR e reamostrar o áudio, os dois desencontram.
+  const args = ["-hide_banner", "-fflags", "+genpts"];
+  if (withAudio) args.push("-async", "1");
+  args.push("-i", input);
   if (!withAudio) {
     args.push("-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=48000");
   }
@@ -113,6 +117,14 @@ async function normalize(
     "-map",
     withAudio ? "0:a:0" : "1:a:0",
     ...(withAudio ? [] : ["-shortest"]),
+    "-af",
+    "aresample=async=1:min_hard_comp=0.100:first_pts=0",
+    "-r",
+    "30",
+    "-fps_mode",
+    "cfr",
+    "-vsync",
+    "cfr",
     "-c:v",
     "libx264",
     "-preset",
@@ -131,12 +143,15 @@ async function normalize(
     "128k",
     "-video_track_timescale",
     "30000",
+    "-avoid_negative_ts",
+    "make_zero",
     output,
   );
 
   clearFFmpegLog();
   await ffmpeg.exec(args);
 }
+
 
 /**
  * Normaliza os dois vídeos para o mesmo formato e concatena.
