@@ -264,6 +264,30 @@ function Index() {
     if (stage !== "preview") setReadyFile(null);
   }, [stage]);
 
+  // Aquece o processador de vídeo e o fechamento enquanto o usuário grava,
+  // para que a montagem não comece do zero na hora de salvar.
+  useEffect(() => {
+    if (stage !== "record") return;
+    void (async () => {
+      const [{ warmFFmpeg }, { fetchOutro }] = await Promise.all([
+        import("@/lib/ffmpeg-client"),
+        import("@/lib/append-outro"),
+      ]);
+      warmFFmpeg();
+      void fetchOutro(true).catch(() => {});
+    })();
+  }, [stage]);
+
+  // Assim que a prévia aparece, já monta o arquivo final em segundo plano.
+  const autoPrepared = useRef<string | null>(null);
+  useEffect(() => {
+    if (stage !== "preview" || !rec.resultUrl) return;
+    if (autoPrepared.current === rec.resultUrl) return;
+    autoPrepared.current = rec.resultUrl;
+    void prepareFile();
+  }, [stage, rec.resultUrl, prepareFile]);
+
+
   useEffect(() => {
     if (videoRef.current && rec.stream) {
       videoRef.current.srcObject = rec.stream;
