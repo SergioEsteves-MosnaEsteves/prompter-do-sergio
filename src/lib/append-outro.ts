@@ -103,9 +103,7 @@ async function normalize(
 
   // A gravação do navegador tem taxa de quadros variável e o áudio corre em
   // tempo real: sem forçar CFR e reamostrar o áudio, os dois desencontram.
-  const args = ["-hide_banner", "-fflags", "+genpts"];
-  if (withAudio) args.push("-async", "1");
-  args.push("-i", input);
+  const args = ["-hide_banner", "-fflags", "+genpts", "-i", input];
   if (!withAudio) {
     args.push("-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=48000");
   }
@@ -121,8 +119,6 @@ async function normalize(
     "aresample=async=1:min_hard_comp=0.100:first_pts=0",
     "-r",
     "30",
-    "-fps_mode",
-    "cfr",
     "-vsync",
     "cfr",
     "-c:v",
