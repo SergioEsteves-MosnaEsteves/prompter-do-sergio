@@ -428,6 +428,10 @@ export function useRecorder() {
     resultUrl,
     resultExt,
     resultBlob,
+    /** true quando a gravação tem faixa de áudio (evita uma passagem do ffmpeg). */
+    hadAudio,
+    /** orientação usada na gravação, define o fechamento correspondente. */
+    resultPortrait,
     replaceResult,
     start,
     stopStream,
@@ -442,5 +446,6 @@ export function useRecorder() {
     setFit,
     aspect,
   };
+
 
 }
