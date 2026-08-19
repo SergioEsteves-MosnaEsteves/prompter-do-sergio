@@ -158,12 +158,35 @@ function Index() {
     a.remove();
   }, []);
 
+  // No iPhone/Android o download vai para Arquivos. Compartilhar o arquivo
+  // abre a folha nativa, que traz "Salvar vídeo" (galeria de Fotos).
+  const saveBlob = useCallback(
+    async (blob: Blob, ext: string, url?: string) => {
+      const file = new File([blob], `gravacao-${Date.now()}.${ext}`, {
+        type: blob.type || (ext === "mp4" ? "video/mp4" : "video/webm"),
+      });
+      const nav = navigator as Navigator & {
+        canShare?: (data: ShareData) => boolean;
+      };
+      if (ext === "mp4" && nav.canShare?.({ files: [file] })) {
+        try {
+          await nav.share({ files: [file] });
+          return;
+        } catch (err) {
+          if (err instanceof DOMException && err.name === "AbortError") return;
+        }
+      }
+      triggerDownload(url ?? URL.createObjectURL(blob), ext);
+    },
+    [triggerDownload],
+  );
+
   const downloadVideo = useCallback(async () => {
     if (!rec.resultBlob || !rec.resultUrl) return;
     setMergeError(null);
 
     if (!withOutro || outroDone.current) {
-      triggerDownload(rec.resultUrl, rec.resultExt);
+      await saveBlob(rec.resultBlob, rec.resultExt, rec.resultUrl);
       return;
     }
 
@@ -177,7 +200,8 @@ function Index() {
       const final = await appendOutro(rec.resultBlob, outro, size, setMergeProgress);
       outroDone.current = true;
       rec.replaceResult(final);
-      triggerDownload(URL.createObjectURL(final), "mp4");
+      await saveBlob(final, "mp4");
+
     } catch (err) {
       console.error("[outro] falha na junção:", err);
       const detail =
@@ -198,11 +222,12 @@ function Index() {
           ? ` Motivo técnico: ${detail}`
           : "";
       setMergeError(`${base}${hint} Baixando só a gravação.`);
-      triggerDownload(rec.resultUrl, rec.resultExt);
+      await saveBlob(rec.resultBlob, rec.resultExt, rec.resultUrl);
     } finally {
       setMerging(false);
     }
-  }, [rec, triggerDownload, withOutro]);
+  }, [rec, saveBlob, withOutro]);
+
 
 
 
@@ -584,11 +609,12 @@ function Index() {
           <Download className="mr-2 size-5" />
           {merging
             ? `Montando vídeo... ${Math.round(mergeProgress * 100)}%`
-            : `Baixar vídeo ${rec.resultExt === "mp4" ? "(MP4)" : "(WebM)"}`}
+            : `Salvar vídeo ${rec.resultExt === "mp4" ? "(MP4)" : "(WebM)"}`}
+
         </Button>
         {mergeError && <p className="text-center text-sm text-destructive">{mergeError}</p>}
         <p className="text-center text-xs text-muted-foreground">
-          No iPhone: toque em Baixar e depois em Salvar em Vídeos.
+          No celular: toque em Salvar vídeo e escolha "Salvar vídeo" para enviar direto às Fotos.
         </p>
 
 
