@@ -360,329 +360,356 @@ function Index() {
 
   if (stage === "setup") {
     return (
-      <main className="mx-auto min-h-screen w-full max-w-lg px-5 pb-14 pt-10">
-        <header className="mb-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">PROMPTER DO SERGIO</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground">
-            Grave olhando para a câmera
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Cole seu roteiro, ajuste a rolagem e grave. O vídeo fica salvo no seu celular.
-          </p>
-        </header>
+      <div className="min-h-screen bg-background">
+        <SiteHeader />
+        <main className="mx-auto w-full max-w-[560px] px-4 pb-12 pt-8">
+          <header className="mb-8">
+            <h1 className="font-editorial text-[28px] font-bold leading-[1.15] text-foreground">
+              Grave olhando para a câmera
+            </h1>
+            <p className="mt-2 font-editorial text-base leading-[1.45] text-muted-foreground">
+              Cole seu roteiro, ajuste a rolagem e grave. O vídeo fica salvo no seu celular.
+            </p>
+          </header>
 
-        <section className="space-y-6">
-          <div className="space-y-3 rounded-xl border border-border bg-card p-4">
-            <div className="space-y-2">
-              <label htmlFor="url" className="text-sm font-medium text-foreground">
-                Link do artigo <span className="text-muted-foreground">(opcional)</span>
+          <section className="space-y-8">
+            <Card title="Roteiro a partir da notícia">
+              <div className="space-y-2">
+                <label htmlFor="url" className="block text-[13px] font-medium uppercase tracking-[0.4px] text-muted-foreground">
+                  Link do artigo <span className="normal-case">(opcional)</span>
+                </label>
+                <Input
+                  id="url"
+                  type="url"
+                  inputMode="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://site.com/materia"
+                  className="h-12 rounded-lg border-border bg-background px-3.5 font-editorial text-base text-foreground placeholder:text-muted-foreground/70 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                />
+                <p className="text-[13px] text-muted-foreground">
+                  Geramos um roteiro em linguagem de manchete a partir da matéria.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <span className="block text-[13px] font-medium uppercase tracking-[0.4px] text-muted-foreground">
+                    Duração
+                  </span>
+                  <Segmented
+                    options={(["30", "60", "90"] as const).map((d) => ({ value: d, label: `${d}s` }))}
+                    value={duration}
+                    onChange={setDuration}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <span className="block text-[13px] font-medium uppercase tracking-[0.4px] text-muted-foreground">
+                    Plataforma
+                  </span>
+                  <Segmented
+                    options={[
+                      { value: "reels", label: "Reels" },
+                      { value: "youtube", label: "YouTube" },
+                    ]}
+                    value={platform}
+                    onChange={setPlatform}
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                className={`relative h-12 w-full overflow-hidden rounded-lg text-[15px] font-semibold transition-all duration-200 ${
+                  generating ? "ring-2 ring-ring/40" : ""
+                }`}
+                disabled={url.trim().length === 0 || generating}
+                onClick={generateScript}
+              >
+                {generating ? (
+                  <>
+                    <Loader2 className="mr-2 size-5 animate-spin" />
+                    <span className="relative z-10">Gerando roteiro...</span>
+                    <span className="absolute inset-0 -translate-x-full animate-[shimmer_1.2s_infinite] bg-gradient-to-r from-transparent via-primary-foreground/25 to-transparent" />
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="mr-2 size-5" />
+                    Gerar roteiro
+                  </>
+                )}
+              </Button>
+
+              {genError && (
+                <p className="flex items-start gap-2 text-[13px] text-destructive">
+                  <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+                  {genError}
+                </p>
+              )}
+            </Card>
+
+            <Card title="Roteiro">
+              <label htmlFor="roteiro" className="block text-[13px] font-medium uppercase tracking-[0.4px] text-muted-foreground">
+                Roteiro sugerido (ajuste o texto no seu estilo)
               </label>
-              <Input
-                id="url"
-                type="url"
-                inputMode="url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://site.com/materia"
+              <Textarea
+                id="roteiro"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Cole aqui o texto que você vai ler..."
+                className="max-h-96 min-h-40 resize-y overflow-y-auto rounded-lg border-border bg-background px-3.5 py-3 font-editorial text-base leading-[1.6] text-foreground placeholder:text-muted-foreground/70 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
               />
-              <p className="text-xs text-muted-foreground">
-                Geramos um roteiro em linguagem de manchete a partir da matéria.
-              </p>
-            </div>
+            </Card>
 
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <span className="text-xs text-muted-foreground">Duração</span>
-                <div className="grid grid-cols-3 gap-1">
-                  {(["30", "60", "90"] as const).map((d) => (
-                    <Button
-                      key={d}
-                      type="button"
-                      size="sm"
-                      variant={duration === d ? "default" : "secondary"}
-                      onClick={() => setDuration(d)}
-                    >
-                      {d}s
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-1">
-                <span className="text-xs text-muted-foreground">Plataforma</span>
-                <div className="grid grid-cols-2 gap-1">
-                  <Button
+            <Card title="Teleprompter">
+              <Row label="Velocidade" value={`${settings.speed} px/s`}>
+                <Slider
+                  value={[settings.speed]}
+                  min={10}
+                  max={200}
+                  step={5}
+                  onValueChange={([v]) => patch({ speed: v })}
+                />
+              </Row>
+              <div className="h-px bg-border" />
+              <Row label="Tamanho da fonte" value={`${settings.fontSize} px`}>
+                <Slider
+                  value={[settings.fontSize]}
+                  min={16}
+                  max={72}
+                  step={2}
+                  onValueChange={([v]) => patch({ fontSize: v })}
+                />
+              </Row>
+              <div className="h-px bg-border" />
+              <Row label="Opacidade da faixa" value={`${Math.round(settings.opacity * 100)}%`}>
+                <Slider
+                  value={[settings.opacity]}
+                  min={0}
+                  max={0.9}
+                  step={0.05}
+                  onValueChange={([v]) => patch({ opacity: v })}
+                />
+              </Row>
+              <div className="h-px bg-border" />
+              <Row label="Altura da faixa" value={`${Math.round(settings.height * 100)}%`}>
+                <Slider
+                  value={[settings.height]}
+                  min={0.25}
+                  max={0.95}
+                  step={0.05}
+                  onValueChange={([v]) => patch({ height: v })}
+                />
+              </Row>
+            </Card>
+
+            <Card title="Vídeo">
+              <span className="block text-[13px] font-medium uppercase tracking-[0.4px] text-muted-foreground">
+                Formato do vídeo
+              </span>
+              <Segmented
+                options={[
+                  {
+                    value: "vertical",
+                    label: "Vertical 9:16",
+                    icon: <RectangleVertical className="size-4" strokeWidth={1.5} />,
+                  },
+                  {
+                    value: "horizontal",
+                    label: "Horizontal 16:9",
+                    icon: <RectangleHorizontal className="size-4" strokeWidth={1.5} />,
+                  },
+                ]}
+                value={orientation}
+                onChange={setOrientation}
+              />
+              {orientation === "horizontal" && (
+                <p className="text-[13px] text-muted-foreground">
+                  Gire o celular para o lado ao gravar na horizontal.
+                </p>
+              )}
+
+              {rec.cameraCount !== 1 && (
+                <button
+                  type="button"
+                  onClick={() => setFacing(facing === "user" ? "environment" : "user")}
+                  className="flex h-11 w-full items-center justify-center gap-2 rounded-lg border-[1.5px] border-primary bg-transparent text-[15px] font-semibold text-primary transition-colors duration-150 hover:bg-primary/5"
+                >
+                  <SwitchCamera className="size-5" strokeWidth={1.5} />
+                  {facing === "user" ? "Frontal" : "Traseira"}
+                </button>
+              )}
+            </Card>
+
+            <Card title="Fechamento">
+              <label className="flex items-start gap-3 text-[15px] text-foreground">
+                <Checkbox
+                  checked={withOutro}
+                  onCheckedChange={(v) => setWithOutro(v === true)}
+                  className="mt-0.5 size-5 rounded border-border data-[state=checked]:border-primary data-[state=checked]:bg-primary"
+                />
+                <span className="flex-1">
+                  Incluir vídeo de fechamento no download
+                  <span className="mt-0.5 block text-[13px] text-muted-foreground">
+                    Adiciona a vinheta final ao arquivo baixado.
+                  </span>
+                </span>
+                <PortasKey size={32} />
+              </label>
+            </Card>
+
+            {rec.error && (
+              <div ref={errorRef} className="space-y-3 rounded-lg border border-border bg-card p-4">
+                <p className="flex items-start gap-2 text-[13px] text-destructive">
+                  <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+                  {rec.error}
+                </p>
+                {rec.errorKind === "iframe" && (
+                  <button
                     type="button"
-                    size="sm"
-                    variant={platform === "reels" ? "default" : "secondary"}
-                    onClick={() => setPlatform("reels")}
+                    onClick={() => window.open(window.location.href, "_blank", "noopener")}
+                    className="flex h-11 items-center justify-center gap-2 rounded-lg border-[1.5px] border-primary px-4 text-[15px] font-semibold text-primary transition-colors duration-150 hover:bg-primary/5"
                   >
-                    Reels
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={platform === "youtube" ? "default" : "secondary"}
-                    onClick={() => setPlatform("youtube")}
-                  >
-                    YouTube
-                  </Button>
-                </div>
+                    <ExternalLink className="size-4" strokeWidth={1.5} />
+                    Abrir em nova aba
+                  </button>
+                )}
               </div>
-            </div>
+            )}
 
             <Button
               type="button"
-              variant={generating ? "default" : "secondary"}
-              className={`w-full relative overflow-hidden transition-all duration-300 ${
-                generating
-                  ? "animate-pulse ring-4 ring-primary/70 ring-offset-2 ring-offset-background"
-                  : ""
-              }`}
-              disabled={url.trim().length === 0 || generating}
-              onClick={generateScript}
+              className="h-12 w-full rounded-lg text-[15px] font-semibold"
+              disabled={text.trim().length === 0 || opening}
+              onClick={() => openCamera()}
             >
-              {generating ? (
-                <>
-                  <Loader2 className="mr-2 size-5 animate-spin" />
-                  <span className="relative z-10 font-semibold">Gerando roteiro...</span>
-                  <span className="absolute inset-0 -translate-x-full animate-[shimmer_1.2s_infinite] bg-gradient-to-r from-transparent via-primary-foreground/25 to-transparent" />
-                  <span className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-primary-foreground/15 to-transparent" />
-                </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 size-4" />
-                  Gerar roteiro
-                </>
-              )}
+              <Circle className="mr-2 size-5 fill-current" strokeWidth={1.5} />
+              {opening ? "Abrindo câmera..." : "Iniciar gravação"}
             </Button>
 
-            {genError && <p className="text-sm text-destructive">{genError}</p>}
-          </div>
-
-          <div className="space-y-2">
-
-            <label htmlFor="roteiro" className="text-sm font-medium text-foreground">
-              Roteiro sugerido (ajuste o texto no seu estilo)
-            </label>
-            <Textarea
-              id="roteiro"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Cole aqui o texto que você vai ler..."
-              className="max-h-96 min-h-56 resize-y overflow-y-auto text-base"
-            />
-          </div>
-
-          <div className="space-y-4 rounded-xl border border-border bg-card p-4">
-            <Row label="Velocidade" value={`${settings.speed} px/s`}>
-              <Slider
-                value={[settings.speed]}
-                min={10}
-                max={200}
-                step={5}
-                onValueChange={([v]) => patch({ speed: v })}
-              />
-            </Row>
-            <Row label="Tamanho da fonte" value={`${settings.fontSize} px`}>
-              <Slider
-                value={[settings.fontSize]}
-                min={16}
-                max={72}
-                step={2}
-                onValueChange={([v]) => patch({ fontSize: v })}
-              />
-            </Row>
-            <Row label="Opacidade da faixa" value={`${Math.round(settings.opacity * 100)}%`}>
-              <Slider
-                value={[settings.opacity]}
-                min={0}
-                max={0.9}
-                step={0.05}
-                onValueChange={([v]) => patch({ opacity: v })}
-              />
-            </Row>
-            <Row label="Altura da faixa" value={`${Math.round(settings.height * 100)}%`}>
-              <Slider
-                value={[settings.height]}
-                min={0.25}
-                max={0.95}
-                step={0.05}
-                onValueChange={([v]) => patch({ height: v })}
-              />
-            </Row>
-          </div>
-
-          <div className="space-y-2">
-            <span className="text-sm font-medium text-foreground">Formato do vídeo</span>
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                type="button"
-                variant={orientation === "vertical" ? "default" : "secondary"}
-                onClick={() => setOrientation("vertical")}
-              >
-                <RectangleVertical className="mr-2 size-4" />
-                Vertical 9:16
-              </Button>
-              <Button
-                type="button"
-                variant={orientation === "horizontal" ? "default" : "secondary"}
-                onClick={() => setOrientation("horizontal")}
-              >
-                <RectangleHorizontal className="mr-2 size-4" />
-                Horizontal 16:9
-              </Button>
-            </div>
-            {orientation === "horizontal" && (
-              <p className="text-xs text-muted-foreground">
-                Gire o celular para o lado ao gravar na horizontal.
+            <div className="flex items-start gap-3 rounded-lg border border-border border-l-[3px] border-l-accent bg-card p-3">
+              <Eye className="mt-0.5 size-5 shrink-0 text-primary" strokeWidth={1.5} />
+              <p className="text-[13px] text-foreground">
+                O teleprompter aparece só na sua tela — ele não fica gravado no vídeo.
               </p>
-            )}
-          </div>
-
-          {rec.cameraCount !== 1 && (
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="secondary"
-                className="flex-1"
-                onClick={() => setFacing(facing === "user" ? "environment" : "user")}
-              >
-                <SwitchCamera className="mr-2 size-4" />
-                {facing === "user" ? "Frontal" : "Traseira"}
-              </Button>
             </div>
-          )}
-
-          {rec.error && (
-            <div
-              ref={errorRef}
-              className="space-y-3 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-foreground"
-            >
-              <p>{rec.error}</p>
-              {rec.errorKind === "iframe" && (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => window.open(window.location.href, "_blank", "noopener")}
-                >
-                  <ExternalLink className="mr-2 size-4" />
-                  Abrir em nova aba
-                </Button>
-              )}
-            </div>
-          )}
-
-          <Button
-            type="button"
-            size="lg"
-            className="w-full"
-            disabled={text.trim().length === 0 || opening}
-            onClick={() => openCamera()}
-          >
-            <Camera className="mr-2 size-5" />
-            {opening ? "Abrindo câmera..." : "Iniciar gravação"}
-          </Button>
-
-          <label className="flex items-start gap-3 rounded-xl border border-border bg-card p-4 text-sm text-foreground">
-            <Checkbox
-              checked={withOutro}
-              onCheckedChange={(v) => setWithOutro(v === true)}
-              className="mt-0.5"
-            />
-            <span>
-              Incluir vídeo de fechamento no download
-              <span className="block text-xs text-muted-foreground">
-                Adiciona a vinheta final ao arquivo baixado.
-              </span>
-            </span>
-          </label>
-
-          <p className="text-center text-xs text-muted-foreground">
-            O teleprompter aparece só na sua tela — ele não fica gravado no vídeo.
-          </p>
-
-        </section>
-      </main>
+          </section>
+        </main>
+        <SiteFooter />
+      </div>
     );
   }
 
   if (stage === "preview" && rec.resultUrl) {
+    const busy = merging || converting;
     return (
-      <main className="mx-auto flex min-h-screen w-full max-w-lg flex-col gap-5 px-5 py-8">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Sua gravação</h1>
-        <video
-          src={rec.resultUrl}
-          controls
-          playsInline
-          className="w-full rounded-xl border border-border bg-black"
-        />
+      <div className="min-h-screen bg-background">
+        <SiteHeader />
+        <main className="mx-auto w-full max-w-[560px] px-4 pb-12 pt-8">
+          <h1 className="font-editorial text-[28px] font-bold leading-[1.15] text-foreground">
+            Sua gravação
+          </h1>
 
-        {convertError && (
-          <p className="rounded-lg border border-border bg-card p-3 text-sm text-destructive">
-            {convertError}
-          </p>
-        )}
+          <div className="mt-6 space-y-4 rounded-lg border border-border bg-background p-4">
+            <video
+              src={rec.resultUrl}
+              controls
+              playsInline
+              className="w-full rounded-lg bg-brand-dark"
+            />
 
-        <Button
-          type="button"
-          size="lg"
-          className="h-12 w-full text-base font-semibold"
-          disabled={merging || converting}
-          onClick={readyFile ? saveReadyFile : prepareFile}
-        >
-          <Download className="mr-2 size-5" />
-          {merging
-            ? `Montando vídeo... ${Math.round(mergeProgress * 100)}%`
-            : converting
-              ? `Convertendo... ${Math.round(progress * 100)}%`
-              : readyFile
-                ? "Salvar nas Fotos"
-                : "Preparar vídeo para salvar"}
-        </Button>
-        {mergeError && <p className="text-center text-sm text-destructive">{mergeError}</p>}
-        <p className="text-center text-xs text-muted-foreground">
-          {readyFile
-            ? 'Toque em "Salvar nas Fotos" e escolha "Salvar vídeo" na folha de compartilhamento do celular.'
-            : "O vídeo já está sendo montado automaticamente. Assim que ficar pronto, o botão salva direto nas Fotos."}
-        </p>
+            {convertError && (
+              <p className="flex items-start gap-2 text-[13px] text-destructive">
+                <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+                {convertError}
+              </p>
+            )}
 
+            {busy && (
+              <div className="space-y-2">
+                <div className="h-1 w-full overflow-hidden rounded-full bg-border">
+                  <div
+                    className="h-full bg-primary transition-all duration-200"
+                    style={{
+                      width: `${Math.round((merging ? mergeProgress : progress) * 100)}%`,
+                    }}
+                  />
+                </div>
+                <p className="text-sm text-foreground">Preparando seu vídeo…</p>
+              </div>
+            )}
 
+            <Button
+              type="button"
+              className="h-12 w-full rounded-lg text-[15px] font-semibold"
+              disabled={busy}
+              onClick={readyFile ? saveReadyFile : prepareFile}
+            >
+              <Download className="mr-2 size-5" strokeWidth={1.5} />
+              {merging
+                ? `Montando vídeo... ${Math.round(mergeProgress * 100)}%`
+                : converting
+                  ? `Convertendo... ${Math.round(progress * 100)}%`
+                  : readyFile
+                    ? "Salvar nas Fotos"
+                    : "Preparar vídeo para salvar"}
+            </Button>
 
+            {withOutro && (
+              <p className="flex items-center gap-2 text-[13px] text-muted-foreground">
+                <KeyRound className="size-4 text-accent" strokeWidth={1.5} />
+                Inclui o vídeo de fechamento do Portas
+              </p>
+            )}
 
-        <Button
-          type="button"
-          variant="secondary"
-          size="lg"
-          onClick={() => {
-            outroDone.current = false;
-            rec.clearResult();
-            openCamera();
-          }}
-        >
-          <RefreshCw className="mr-2 size-4" />
-          Regravar
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={() => {
-            outroDone.current = false;
-            rec.clearResult();
-            rec.stopStream();
-            setStage("setup");
-          }}
-        >
-          Voltar ao roteiro
-        </Button>
-      </main>
+            {mergeError && (
+              <p className="flex items-start gap-2 text-[13px] text-destructive">
+                <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+                {mergeError}
+              </p>
+            )}
+
+            <p className="text-[13px] text-muted-foreground">
+              {readyFile
+                ? 'Toque em "Salvar nas Fotos" e escolha "Salvar vídeo" na folha de compartilhamento do celular.'
+                : "O vídeo já está sendo montado automaticamente. Assim que ficar pronto, o botão salva direto nas Fotos."}
+            </p>
+
+            <button
+              type="button"
+              onClick={() => {
+                outroDone.current = false;
+                rec.clearResult();
+                openCamera();
+              }}
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-lg border-[1.5px] border-primary text-[15px] font-semibold text-primary transition-colors duration-150 hover:bg-primary/5"
+            >
+              <RefreshCw className="size-4" strokeWidth={1.5} />
+              Gravar novamente
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                outroDone.current = false;
+                rec.clearResult();
+                rec.stopStream();
+                setStage("setup");
+              }}
+              className="h-11 w-full text-[15px] font-semibold text-muted-foreground transition-colors duration-150 hover:text-foreground"
+            >
+              Voltar ao roteiro
+            </button>
+          </div>
+        </main>
+        <SiteFooter />
+      </div>
     );
   }
 
   return (
-    <main className="fixed inset-0 flex items-center justify-center overflow-hidden bg-black">
+    <main className="dark fixed inset-0 flex items-center justify-center overflow-hidden bg-brand-dark">
       <div
-        className="relative max-h-full max-w-full overflow-hidden"
+        className="relative max-h-full max-w-full overflow-hidden rounded-lg"
         style={{
           aspectRatio: `${rec.aspect}`,
           height: orientation === "vertical" ? "100%" : undefined,
@@ -695,10 +722,13 @@ function Index() {
           playsInline
           autoPlay
           onClick={() => setChromeVisible((v) => !v)}
-          className="size-full object-contain"
+          className="size-full bg-brand-dark object-contain"
         />
 
-
+        <div className="pointer-events-none absolute left-3 top-3 z-10 rounded-md border border-brand-dark-border bg-brand-dark-2/90 px-2 py-1 text-[11px] text-on-dark">
+          {platform === "reels" ? "Reels" : "YouTube"} ·{" "}
+          {orientation === "vertical" ? "9:16" : "16:9"} · {duration}s
+        </div>
 
         <TeleprompterOverlay
           text={text}
@@ -709,9 +739,9 @@ function Index() {
       </div>
 
       {speedHint !== null && (
-        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-background/80 px-5 py-3 text-center">
-          <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Velocidade</div>
-          <div className="text-2xl font-bold tabular-nums text-foreground">{speedHint}</div>
+        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-brand-dark-2/90 px-5 py-3 text-center">
+          <div className="text-[11px] uppercase tracking-wide text-on-dark">Velocidade</div>
+          <div className="text-2xl font-bold tabular-nums text-on-dark-strong">{speedHint}</div>
         </div>
       )}
 
@@ -721,9 +751,9 @@ function Index() {
             type="button"
             onClick={flipCamera}
             aria-label="Trocar câmera"
-            className="absolute right-4 top-4 flex size-10 items-center justify-center rounded-full bg-background/70 text-foreground"
+            className="absolute right-4 top-4 flex size-11 items-center justify-center rounded-full bg-brand-dark-2 text-brand-light"
           >
-            <SwitchCamera className="size-5" />
+            <SwitchCamera className="size-5" strokeWidth={1.5} />
           </button>
           <RecorderControls
             settings={settings}
@@ -749,6 +779,48 @@ function Index() {
   );
 }
 
+function Card({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-3 rounded-lg border border-border bg-card p-4">
+      <p className="kicker">{title}</p>
+      {children}
+    </div>
+  );
+}
+
+function Segmented<T extends string>({
+  options,
+  value,
+  onChange,
+}: {
+  options: { value: T; label: string; icon?: React.ReactNode }[];
+  value: T;
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div
+      className="grid gap-1 rounded-lg bg-border p-1"
+      style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
+    >
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          onClick={() => onChange(o.value)}
+          className={`flex h-10 items-center justify-center gap-1.5 rounded-md px-2 text-[13px] transition-colors duration-150 ${
+            value === o.value
+              ? "bg-primary font-semibold text-primary-foreground"
+              : "font-medium text-foreground hover:bg-background/60"
+          }`}
+        >
+          {o.icon}
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function Row({
   label,
   value,
@@ -759,12 +831,15 @@ function Row({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-1">
       <div className="flex items-baseline justify-between">
-        <span className="text-sm text-foreground">{label}</span>
-        <span className="text-xs tabular-nums text-muted-foreground">{value}</span>
+        <span className="text-[13px] font-medium uppercase tracking-[0.4px] text-muted-foreground">
+          {label}
+        </span>
+        <span className="text-[13px] font-semibold tabular-nums text-foreground">{value}</span>
       </div>
       {children}
     </div>
   );
 }
+
