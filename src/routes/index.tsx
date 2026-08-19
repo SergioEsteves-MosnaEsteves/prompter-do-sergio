@@ -96,7 +96,7 @@ function Index() {
 
   const search = Route.useSearch();
   const [url, setUrl] = useState(search.url ?? "");
-  const [duration, setDuration] = useState<"30" | "60" | "90">(search.duracao ?? "60");
+  const [duration, setDuration] = useState<"30" | "60" | "90">(search.duracao ?? "30");
   const [platform, setPlatform] = useState<"reels" | "youtube">(search.plataforma ?? "reels");
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
@@ -432,10 +432,10 @@ function Index() {
 
             <Button
               type="button"
-              variant="secondary"
+              variant={generating ? "default" : "secondary"}
               className={`w-full relative overflow-hidden transition-all duration-300 ${
                 generating
-                  ? "animate-pulse ring-2 ring-primary ring-offset-2 ring-offset-background"
+                  ? "animate-pulse ring-4 ring-primary/70 ring-offset-2 ring-offset-background"
                   : ""
               }`}
               disabled={url.trim().length === 0 || generating}
@@ -443,9 +443,10 @@ function Index() {
             >
               {generating ? (
                 <>
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  <span className="relative z-10">Gerando roteiro...</span>
-                  <span className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+                  <Loader2 className="mr-2 size-5 animate-spin" />
+                  <span className="relative z-10 font-semibold">Gerando roteiro...</span>
+                  <span className="absolute inset-0 -translate-x-full animate-[shimmer_1.2s_infinite] bg-gradient-to-r from-transparent via-primary-foreground/25 to-transparent" />
+                  <span className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-primary-foreground/15 to-transparent" />
                 </>
               ) : (
                 <>
@@ -461,7 +462,7 @@ function Index() {
           <div className="space-y-2">
 
             <label htmlFor="roteiro" className="text-sm font-medium text-foreground">
-              Roteiro
+              Roteiro sugerido (ajuste o texto no seu estilo)
             </label>
             <Textarea
               id="roteiro"
