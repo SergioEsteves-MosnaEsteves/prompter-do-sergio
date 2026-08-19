@@ -22,6 +22,11 @@ export function clearFFmpegLog() {
   logBuffer.length = 0;
 }
 
+/** Começa a baixar/carregar o processador em segundo plano (sem bloquear). */
+export function warmFFmpeg() {
+  void getFFmpeg().catch(() => {});
+}
+
 export async function getFFmpeg(): Promise<FFmpegInstance> {
   if (!ffmpegPromise) {
     ffmpegPromise = (async () => {
