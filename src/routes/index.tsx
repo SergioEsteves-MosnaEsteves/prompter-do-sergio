@@ -609,7 +609,8 @@ function Index() {
           <Download className="mr-2 size-5" />
           {merging
             ? `Montando vídeo... ${Math.round(mergeProgress * 100)}%`
-            : `Baixar vídeo ${rec.resultExt === "mp4" ? "(MP4)" : "(WebM)"}`}
+            : `Salvar vídeo ${rec.resultExt === "mp4" ? "(MP4)" : "(WebM)"}`}
+
         </Button>
         {mergeError && <p className="text-center text-sm text-destructive">{mergeError}</p>}
         <p className="text-center text-xs text-muted-foreground">
