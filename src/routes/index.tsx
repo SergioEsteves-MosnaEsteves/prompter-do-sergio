@@ -135,21 +135,6 @@ function Index() {
 
 
 
-  const convertVideo = useCallback(async () => {
-    if (!rec.resultBlob) return;
-    setConverting(true);
-    setConvertError(null);
-    setProgress(0);
-    try {
-      const { convertToMp4 } = await import("@/lib/convert-to-mp4");
-      const mp4 = await convertToMp4(rec.resultBlob, setProgress);
-      rec.replaceResult(mp4);
-    } catch {
-      setConvertError("Não foi possível converter. Tente um vídeo mais curto.");
-    } finally {
-      setConverting(false);
-    }
-  }, [rec]);
 
   const triggerDownload = useCallback((blob: Blob, ext: string) => {
     const url = URL.createObjectURL(blob);
