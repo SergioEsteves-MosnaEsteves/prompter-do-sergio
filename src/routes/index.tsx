@@ -267,7 +267,7 @@ function Index() {
   // Aquece o processador de vídeo e o fechamento enquanto o usuário grava,
   // para que a montagem não comece do zero na hora de salvar.
   useEffect(() => {
-    if (stage !== "record") return;
+    if (stage !== "camera") return;
     void (async () => {
       const [{ warmFFmpeg }, { fetchOutro }] = await Promise.all([
         import("@/lib/ffmpeg-client"),
