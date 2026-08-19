@@ -6,7 +6,6 @@ import {
   Camera,
   Download,
   ExternalLink,
-  FileVideo,
   Loader2,
   RectangleHorizontal,
   RectangleVertical,
