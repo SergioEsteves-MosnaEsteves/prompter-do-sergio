@@ -190,10 +190,18 @@ function Index() {
       setMerging(true);
       setMergeProgress(0);
       try {
-        const { appendOutro, fetchOutro, getVideoSize } = await import("@/lib/append-outro");
-        const outro = await fetchOutro();
-        const size = await getVideoSize(blob);
-        blob = await appendOutro(blob, outro, size, setMergeProgress);
+        const { appendOutro, fetchOutro, getVideoSize, targetSize } = await import(
+          "@/lib/append-outro"
+        );
+        const portrait = rec.resultPortrait;
+        const size = targetSize(portrait);
+        const [outro, real] = await Promise.all([fetchOutro(portrait), getVideoSize(blob)]);
+        const canCopy =
+          rec.resultExt === "mp4" && real.width === size.w && real.height === size.h;
+        blob = await appendOutro(blob, outro, size, setMergeProgress, {
+          canCopy,
+          hasAudio: rec.hadAudio,
+        });
         outroDone.current = true;
         rec.replaceResult(blob);
       } catch (err) {
@@ -225,6 +233,7 @@ function Index() {
       new File([blob], `gravacao-${Date.now()}.mp4`, { type: blob.type || "video/mp4" }),
     );
   }, [rec, withOutro]);
+
 
   const saveReadyFile = useCallback(() => {
     const file = readyFile;
