@@ -149,84 +149,101 @@ function Index() {
     }
   }, [rec]);
 
-  const triggerDownload = useCallback((url: string, ext: string) => {
+  const triggerDownload = useCallback((blob: Blob, ext: string) => {
+    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = `gravacao-${Date.now()}.${ext}`;
     document.body.appendChild(a);
     a.click();
     a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
   }, []);
 
-  // No iPhone/Android o download vai para Arquivos. Compartilhar o arquivo
-  // abre a folha nativa, que traz "Salvar vídeo" (galeria de Fotos).
-  const saveBlob = useCallback(
-    async (blob: Blob, ext: string, url?: string) => {
-      const file = new File([blob], `gravacao-${Date.now()}.${ext}`, {
-        type: blob.type || (ext === "mp4" ? "video/mp4" : "video/webm"),
-      });
-      const nav = navigator as Navigator & {
-        canShare?: (data: ShareData) => boolean;
-      };
-      if (ext === "mp4" && nav.canShare?.({ files: [file] })) {
-        try {
-          await nav.share({ files: [file] });
-          return;
-        } catch (err) {
-          if (err instanceof DOMException && err.name === "AbortError") return;
-        }
-      }
-      triggerDownload(url ?? URL.createObjectURL(blob), ext);
-    },
-    [triggerDownload],
-  );
-
-  const downloadVideo = useCallback(async () => {
-    if (!rec.resultBlob || !rec.resultUrl) return;
+  // iOS só mostra "Salvar vídeo" (Fotos) se navigator.share for chamado
+  // DENTRO do gesto do usuário. Por isso o arquivo é preparado antes,
+  // num primeiro toque, e compartilhado sem await no segundo.
+  const prepareFile = useCallback(async () => {
+    if (!rec.resultBlob) return;
     setMergeError(null);
+    let blob = rec.resultBlob;
 
-    if (!withOutro || outroDone.current) {
-      await saveBlob(rec.resultBlob, rec.resultExt, rec.resultUrl);
+    try {
+      if (rec.resultExt !== "mp4") {
+        setConverting(true);
+        setProgress(0);
+        const { convertToMp4 } = await import("@/lib/convert-to-mp4");
+        blob = await convertToMp4(blob, setProgress);
+        rec.replaceResult(blob);
+        setConverting(false);
+      }
+    } catch {
+      setConverting(false);
+      setConvertError("Não foi possível converter para MP4. Tente um vídeo mais curto.");
+      setReadyFile(new File([blob], `gravacao-${Date.now()}.${rec.resultExt}`, { type: blob.type }));
       return;
     }
 
-
-    setMerging(true);
-    setMergeProgress(0);
-    try {
-      const { appendOutro, fetchOutro, getVideoSize } = await import("@/lib/append-outro");
-      const outro = await fetchOutro();
-      const size = await getVideoSize(rec.resultBlob);
-      const final = await appendOutro(rec.resultBlob, outro, size, setMergeProgress);
-      outroDone.current = true;
-      rec.replaceResult(final);
-      await saveBlob(final, "mp4");
-
-    } catch (err) {
-      console.error("[outro] falha na junção:", err);
-      const detail =
-        err && typeof err === "object" && "detail" in err
-          ? String((err as { detail: unknown }).detail)
-          : err instanceof Error
+    if (withOutro && !outroDone.current) {
+      setMerging(true);
+      setMergeProgress(0);
+      try {
+        const { appendOutro, fetchOutro, getVideoSize } = await import("@/lib/append-outro");
+        const outro = await fetchOutro();
+        const size = await getVideoSize(blob);
+        blob = await appendOutro(blob, outro, size, setMergeProgress);
+        outroDone.current = true;
+        rec.replaceResult(blob);
+      } catch (err) {
+        console.error("[outro] falha na junção:", err);
+        const detail =
+          err && typeof err === "object" && "detail" in err
+            ? String((err as { detail: unknown }).detail)
+            : err instanceof Error
+              ? err.message
+              : typeof err === "string"
+                ? err
+                : "erro não identificado";
+        const base =
+          err instanceof Error && err.name === "MergeError"
             ? err.message
-            : typeof err === "string"
-              ? err
-              : "erro não identificado";
-      const base =
-        err instanceof Error && err.name === "MergeError"
-          ? err.message
-          : "Não foi possível juntar o vídeo de fechamento.";
-      const hint = /memory|abort|alloc|out of bounds/i.test(detail)
-        ? " Motivo: memória insuficiente no navegador para processar este vídeo."
-        : detail
-          ? ` Motivo técnico: ${detail}`
-          : "";
-      setMergeError(`${base}${hint} Baixando só a gravação.`);
-      await saveBlob(rec.resultBlob, rec.resultExt, rec.resultUrl);
-    } finally {
-      setMerging(false);
+            : "Não foi possível juntar o vídeo de fechamento.";
+        const hint = /memory|abort|alloc|out of bounds/i.test(detail)
+          ? " Motivo: memória insuficiente no navegador para processar este vídeo."
+          : detail
+            ? ` Motivo técnico: ${detail}`
+            : "";
+        setMergeError(`${base}${hint} Salvando só a gravação.`);
+      } finally {
+        setMerging(false);
+      }
     }
-  }, [rec, saveBlob, withOutro]);
+
+    setReadyFile(
+      new File([blob], `gravacao-${Date.now()}.mp4`, { type: blob.type || "video/mp4" }),
+    );
+  }, [rec, withOutro]);
+
+  const saveReadyFile = useCallback(() => {
+    const file = readyFile;
+    if (!file) return;
+    const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
+    if (nav.canShare?.({ files: [file] })) {
+      // sem await antes: mantém o gesto do usuário válido no iOS
+      nav
+        .share({ files: [file] })
+        .catch((err: unknown) => {
+          if (err instanceof DOMException && err.name === "AbortError") return;
+          setMergeError(
+            "O sistema não abriu a folha de compartilhamento. Baixando o arquivo.",
+          );
+          triggerDownload(file, file.name.split(".").pop() ?? "mp4");
+        });
+      return;
+    }
+    triggerDownload(file, file.name.split(".").pop() ?? "mp4");
+  }, [readyFile, triggerDownload]);
+
 
 
 
