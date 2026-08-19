@@ -614,7 +614,7 @@ function Index() {
         </Button>
         {mergeError && <p className="text-center text-sm text-destructive">{mergeError}</p>}
         <p className="text-center text-xs text-muted-foreground">
-          No iPhone: toque em Baixar e depois em Salvar em Vídeos.
+          No celular: toque em Salvar vídeo e escolha "Salvar vídeo" para enviar direto às Fotos.
         </p>
 
 
