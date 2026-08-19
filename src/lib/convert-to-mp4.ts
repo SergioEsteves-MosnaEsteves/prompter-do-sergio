@@ -20,8 +20,16 @@ export async function convertToMp4(
     const outputName = "output.mp4";
     await ffmpeg.writeFile(inputName, new Uint8Array(await input.arrayBuffer()));
     await ffmpeg.exec([
+      "-fflags",
+      "+genpts",
       "-i",
       inputName,
+      "-af",
+      "aresample=async=1:min_hard_comp=0.100:first_pts=0",
+      "-vsync",
+      "cfr",
+      "-r",
+      "30",
       "-c:v",
       "libx264",
       "-preset",
@@ -34,6 +42,8 @@ export async function convertToMp4(
       "128k",
       "-movflags",
       "+faststart",
+      "-avoid_negative_ts",
+      "make_zero",
       outputName,
     ]);
     const data = (await ffmpeg.readFile(outputName)) as Uint8Array;
