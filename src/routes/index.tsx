@@ -252,6 +252,10 @@ function Index() {
 
 
   useEffect(() => {
+    setReadyFile(null);
+  }, [rec.resultUrl]);
+
+  useEffect(() => {
     if (videoRef.current && rec.stream) {
       videoRef.current.srcObject = rec.stream;
       videoRef.current.play().catch(() => {});
