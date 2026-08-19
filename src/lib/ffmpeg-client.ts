@@ -2,7 +2,10 @@
  * Instância compartilhada do ffmpeg.wasm (roda no aparelho, nada vai para servidores).
  */
 
-const CORE_BASE = "https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd";
+// A biblioteca @ffmpeg/ffmpeg usa um Web Worker do tipo module no Vite.
+// O core UMD tenta usar importScripts() e falha nesse Worker; o build ESM é
+// compatível com import() e funciona nos navegadores desktop modernos.
+const CORE_BASE = "https://unpkg.com/@ffmpeg/core@0.12.10/dist/esm";
 
 export type FFmpegInstance = import("@ffmpeg/ffmpeg").FFmpeg;
 
@@ -31,10 +34,15 @@ export async function getFFmpeg(): Promise<FFmpegInstance> {
         logBuffer.push(message);
         if (logBuffer.length > 400) logBuffer.shift();
       });
-      await ffmpeg.load({
-        coreURL: await toBlobURL(`${CORE_BASE}/ffmpeg-core.js`, "text/javascript"),
-        wasmURL: await toBlobURL(`${CORE_BASE}/ffmpeg-core.wasm`, "application/wasm"),
-      });
+      try {
+        await ffmpeg.load({
+          coreURL: await toBlobURL(`${CORE_BASE}/ffmpeg-core.js`, "text/javascript"),
+          wasmURL: await toBlobURL(`${CORE_BASE}/ffmpeg-core.wasm`, "application/wasm"),
+        });
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : String(error);
+        throw new Error(`Falha ao carregar o processador de vídeo: ${detail}`);
+      }
       return ffmpeg;
     })().catch((err) => {
       ffmpegPromise = null;
