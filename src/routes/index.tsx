@@ -633,26 +633,10 @@ function Index() {
           className="w-full rounded-xl border border-border bg-black"
         />
 
-        {rec.resultExt !== "mp4" && (
-          <div className="space-y-3 rounded-lg border border-border bg-card p-3 text-sm">
-            <p className="text-muted-foreground">
-              Este navegador gravou em WebM, formato que a galeria do celular não aceita.
-              Converta para MP4 antes de salvar.
-            </p>
-            <Button
-              type="button"
-              variant="secondary"
-              className="w-full"
-              disabled={converting}
-              onClick={convertVideo}
-            >
-              <FileVideo className="mr-2 size-4" />
-              {converting
-                ? `Convertendo... ${Math.round(progress * 100)}%`
-                : "Converter para MP4"}
-            </Button>
-            {convertError && <p className="text-destructive">{convertError}</p>}
-          </div>
+        {convertError && (
+          <p className="rounded-lg border border-border bg-card p-3 text-sm text-destructive">
+            {convertError}
+          </p>
         )}
 
         <Button
@@ -675,8 +659,9 @@ function Index() {
         <p className="text-center text-xs text-muted-foreground">
           {readyFile
             ? 'Toque em "Salvar nas Fotos" e escolha "Salvar vídeo" na folha de compartilhamento do celular.'
-            : "Primeiro prepare o vídeo (MP4). Depois o botão abre a opção de salvar direto nas Fotos."}
+            : "O vídeo já está sendo montado automaticamente. Assim que ficar pronto, o botão salva direto nas Fotos."}
         </p>
+
 
 
 
