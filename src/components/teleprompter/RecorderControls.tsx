@@ -256,7 +256,34 @@ export function RecorderControls({
             <span className="text-[11px] text-on-dark">Mais</span>
           </div>
         </div>
-      </div>
-    </>
+    </div>
   );
 }
+
+export function RecorderTopBar({
+  recording,
+  elapsed,
+  onExit,
+}: {
+  recording: boolean;
+  elapsed: number;
+  onExit: () => void;
+}) {
+  return (
+    <div className="pointer-events-auto flex h-14 shrink-0 items-center justify-between border-b border-brand-dark-border bg-brand-dark px-4">
+      <PortasWordmark height={24} />
+      <div className="flex items-center gap-2 text-base font-semibold tabular-nums text-on-dark-strong">
+        {recording && <span className="size-2.5 animate-pulse rounded-full bg-brand" />}
+        {fmt(elapsed)}
+      </div>
+      <button
+        type="button"
+        onClick={onExit}
+        className="text-[13px] font-semibold text-brand-light transition-colors duration-150"
+      >
+        Roteiro
+      </button>
+    </div>
+  );
+}
+
