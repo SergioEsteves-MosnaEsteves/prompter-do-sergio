@@ -47,3 +47,59 @@ Quando `recording === false` (ainda na tela de câmera, mas não gravando), o ro
 - Editar `src/routes/index.tsx`: adicionar Zoom e Enquadramento ao card de Teleprompter (ou novo card) na tela de configuração.
 - Ajustar altura máxima do rodapé compacto para ficar abaixo de 40% da altura atual do rodapé completo.
 - Verificar visualmente no preview mobile e desktop para garantir que o botão de gravar e os controles de velocidade permanecem acessíveis e que o vídeo ganha espaço real.
+
+&nbsp;
+
+# Diminuir o espaço entre as opções do Teleprompter
+
+&nbsp;
+
+## O que muda para você
+
+&nbsp;
+
+As quatro opções do Teleprompter (Velocidade, Tamanho da fonte, Opacidade da faixa, Altura da faixa) vão ficar mais juntas e compactas, ocupando menos espaço vertical na tela sem perder a legibilidade dos valores.
+
+&nbsp;
+
+## O que vai ser alterado
+
+&nbsp;
+
+Apenas o card **"Teleprompter"** em `src/routes/index.tsx` e o componente `Row` local:
+
+&nbsp;
+
+- **Remover os divisores horizontais** `<div className="h-px bg-border" />`) entre os sliders, deixando as opções grudadas visualmente.
+
+- **Reduzir o espaço interno de cada opção** para que label + valor + slider fiquam mais compactos.
+
+- **Diminuir o padding do card** ou o espaço entre as opções, ganhando mais altura útil para o roteiro e a câmera.
+
+- **Manter as mesmas labels e valores** — só o espaçamento visual muda.
+
+- **Ajustar o componente `Row`** para aceitar uma variação compacta (ou reescrever os controles diretamente no card) sem impactar outros cards.
+
+&nbsp;
+
+## O que não muda
+
+&nbsp;
+
+- Funcionalidade dos sliders (mínimos, máximos, passos, eventos).
+
+- Outros cards da página (Roteiro, Vídeo, Fechamento, etc.).
+
+- Cores, tipografia e botões da marca Portas.
+
+&nbsp;
+
+## Detalhes técnicos
+
+&nbsp;
+
+- Editar `src/routes/index.tsx`.
+
+- Ajustar o card de Teleprompter (linhas ~471–511) e o componente `Row` (linhas ~836–856) para uma versão compacta.
+
+- Verificar visualmente no preview mobile e desktop para garantir que não ficou apertado demais.

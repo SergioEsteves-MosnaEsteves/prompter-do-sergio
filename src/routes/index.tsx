@@ -468,8 +468,8 @@ function Index() {
               />
             </Card>
 
-            <Card title="Teleprompter">
-              <Row label="Velocidade" value={`${settings.speed} px/s`}>
+            <Card title="Teleprompter" compact>
+              <Row label="Velocidade" value={`${settings.speed} px/s`} compact>
                 <Slider
                   value={[settings.speed]}
                   min={10}
@@ -478,8 +478,7 @@ function Index() {
                   onValueChange={([v]) => patch({ speed: v })}
                 />
               </Row>
-              <div className="h-px bg-border" />
-              <Row label="Tamanho da fonte" value={`${settings.fontSize} px`}>
+              <Row label="Tamanho da fonte" value={`${settings.fontSize} px`} compact>
                 <Slider
                   value={[settings.fontSize]}
                   min={16}
@@ -488,8 +487,7 @@ function Index() {
                   onValueChange={([v]) => patch({ fontSize: v })}
                 />
               </Row>
-              <div className="h-px bg-border" />
-              <Row label="Opacidade da faixa" value={`${Math.round(settings.opacity * 100)}%`}>
+              <Row label="Opacidade da faixa" value={`${Math.round(settings.opacity * 100)}%`} compact>
                 <Slider
                   value={[settings.opacity]}
                   min={0}
@@ -498,8 +496,7 @@ function Index() {
                   onValueChange={([v]) => patch({ opacity: v })}
                 />
               </Row>
-              <div className="h-px bg-border" />
-              <Row label="Altura da faixa" value={`${Math.round(settings.height * 100)}%`}>
+              <Row label="Altura da faixa" value={`${Math.round(settings.height * 100)}%`} compact>
                 <Slider
                   value={[settings.height]}
                   min={0.25}
@@ -535,6 +532,46 @@ function Index() {
                   Gire o celular para o lado ao gravar na horizontal.
                 </p>
               )}
+
+              <div className="space-y-2">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-[13px] font-medium uppercase tracking-[0.4px] text-muted-foreground">
+                    Zoom
+                  </span>
+                  <span className="text-[13px] font-semibold tabular-nums text-foreground">
+                    {rec.zoom.toFixed(1)}x
+                  </span>
+                </div>
+                <Slider
+                  value={[rec.zoom]}
+                  min={1}
+                  max={rec.maxZoom}
+                  step={0.1}
+                  onValueChange={([v]) => rec.setZoom(v)}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <span className="block text-[13px] font-medium uppercase tracking-[0.4px] text-muted-foreground">
+                  Enquadramento
+                </span>
+                <div className="grid grid-cols-2 gap-1 rounded-lg border border-border bg-muted p-1">
+                  {(["cover", "contain"] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => rec.setFit(mode)}
+                      className={`rounded-md px-3 py-2 text-[13px] font-semibold transition-all duration-150 ${
+                        rec.fit === mode
+                          ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/30"
+                          : "border border-border bg-background text-foreground hover:border-primary/40 hover:bg-muted/80 hover:text-primary"
+                      }`}
+                    >
+                      {mode === "cover" ? "Preencher" : "Cabe tudo"}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               {rec.cameraCount !== 1 && (
                 <button
@@ -788,11 +825,11 @@ function Index() {
 }
 
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Card({ title, compact, children }: { title: string; compact?: boolean; children: React.ReactNode }) {
   return (
-    <div className="space-y-3 rounded-lg border border-border bg-card p-4">
+    <div className={`space-y-3 rounded-lg border border-border bg-card p-4 ${compact ? "py-3" : ""}`}>
       <p className="kicker">{title}</p>
-      {children}
+      <div className={compact ? "space-y-2" : "space-y-3"}>{children}</div>
     </div>
   );
 }
@@ -836,19 +873,21 @@ function Segmented<T extends string>({
 function Row({
   label,
   value,
+  compact,
   children,
 }: {
   label: string;
   value: string;
+  compact?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1">
+    <div className={compact ? "space-y-0.5" : "space-y-1"}>
       <div className="flex items-baseline justify-between">
-        <span className="text-[13px] font-medium uppercase tracking-[0.4px] text-muted-foreground">
+        <span className={`font-medium uppercase tracking-[0.4px] text-muted-foreground ${compact ? "text-[12px]" : "text-[13px]"}`}>
           {label}
         </span>
-        <span className="text-[13px] font-semibold tabular-nums text-foreground">{value}</span>
+        <span className={`font-semibold tabular-nums text-foreground ${compact ? "text-[12px]" : "text-[13px]"}`}>{value}</span>
       </div>
       {children}
     </div>

@@ -127,6 +127,67 @@ export function RecorderControls({
   fit,
   onFitChange,
 }: Props) {
+  if (recording) {
+    return (
+      <div className="pointer-events-auto shrink-0 bg-brand-dark px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onToggleScroll}
+              aria-label={scrolling ? "Pausar rolagem" : "Iniciar rolagem"}
+              className="flex size-10 min-h-10 min-w-10 items-center justify-center rounded-full bg-brand-dark-2 text-brand-light"
+            >
+              {scrolling ? (
+                <Pause className="size-4" strokeWidth={1.5} />
+              ) : (
+                <Play className="size-4" strokeWidth={1.5} />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={onRestart}
+              aria-label="Reiniciar roteiro"
+              className="flex size-10 min-h-10 min-w-10 items-center justify-center rounded-full bg-brand-dark-2 text-brand-light"
+            >
+              <RotateCcw className="size-4" strokeWidth={1.5} />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <HoldButton
+              onPress={() => onChange({ speed: clampSpeed(settings.speed - SPEED_STEP) })}
+              ariaLabel="Diminuir velocidade do teleprompter"
+            >
+              <Minus className="size-5" strokeWidth={1.5} />
+            </HoldButton>
+
+            <div className="flex flex-col items-center gap-0.5">
+              <button
+                type="button"
+                onClick={onToggleRecord}
+                aria-label="Parar gravação"
+                className="flex size-[72px] items-center justify-center rounded-full border-[3px] border-brand-light p-1.5"
+              >
+                <span className="size-7 rounded-md bg-brand" />
+              </button>
+              <span className="text-[10px] leading-none text-on-dark">
+                Velocidade <span className="tabular-nums text-on-dark-strong">{settings.speed}</span>
+              </span>
+            </div>
+
+            <HoldButton
+              onPress={() => onChange({ speed: clampSpeed(settings.speed + SPEED_STEP) })}
+              ariaLabel="Aumentar velocidade do teleprompter"
+            >
+              <Plus className="size-5" strokeWidth={1.5} />
+            </HoldButton>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="pointer-events-auto max-h-[45vh] shrink-0 space-y-4 overflow-y-auto bg-brand-dark px-4 pb-6 pt-4">
 
@@ -230,16 +291,10 @@ export function RecorderControls({
             <button
               type="button"
               onClick={onToggleRecord}
-              aria-label={recording ? "Parar gravação" : "Gravar"}
+              aria-label="Gravar"
               className="flex size-[72px] items-center justify-center rounded-full border-[3px] border-brand-light p-1.5"
             >
-              <span
-                className={
-                  recording
-                    ? "size-7 rounded-md bg-brand"
-                    : "size-full rounded-full bg-brand"
-                }
-              />
+              <span className="size-full rounded-full bg-brand" />
             </button>
             <span className="text-[11px] text-on-dark">
               Velocidade <span className="tabular-nums text-on-dark-strong">{settings.speed}</span>
