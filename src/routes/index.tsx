@@ -464,7 +464,7 @@ function Index() {
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Cole aqui o texto que você vai ler..."
-                className="max-h-96 min-h-40 resize-y overflow-y-auto rounded-lg border-border bg-background px-3.5 py-3 font-editorial text-base leading-[1.6] text-foreground placeholder:text-muted-foreground/70 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                className="max-h-[31.25rem] min-h-52 resize-y overflow-y-auto rounded-lg border-border bg-background px-3.5 py-3 font-editorial text-base leading-[1.6] text-foreground placeholder:text-muted-foreground/70 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
               />
             </Card>
 
