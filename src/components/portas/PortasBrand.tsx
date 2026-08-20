@@ -15,19 +15,19 @@ export function PortasKeyIcon({
 }) {
   return (
     <svg
-      viewBox="0 0 64 40"
-      width={size * 1.6}
+      viewBox="0 0 340 240"
+      width={size * 1.42}
       height={size}
       className={className}
       aria-hidden
       focusable="false"
     >
-      <circle cx="16" cy="20" r="12" fill="none" stroke={color} strokeWidth="8" />
-      <path d="M26 14 L54 14 L48 26 L26 26 Z" fill={color} />
+      <circle cx="100" cy="120" r="74" fill="none" stroke={color} strokeWidth="52" />
+      <path d="M100 94 H322 L302 148 H100 Z" fill={color} />
     </svg>
-
   );
 }
+
 
 export function PortasKey({ size = 32, className }: { size?: number; className?: string }) {
   return (
