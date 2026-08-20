@@ -76,7 +76,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const DEFAULTS: PrompterSettings = { speed: 35, fontSize: 30, opacity: 0.4, height: 0.35 };
+const DEFAULTS: PrompterSettings = { speed: 35, fontSize: 18, opacity: 0.4, height: 0.35 };
 
 type Stage = "setup" | "camera" | "preview";
 
