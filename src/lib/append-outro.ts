@@ -39,11 +39,25 @@ function errorDetail(error: unknown): string {
   return lastError();
 }
 
-const outroCache = new Map<string, Promise<Uint8Array>>();
+const outroCache = new Map<string, Promise<ArrayBuffer>>();
 
-/** Baixa o fechamento já normalizado (com cache entre montagens). */
-export function fetchOutro(portrait = true): Promise<Uint8Array> {
-  const url = portrait ? outroPortraitAsset.url : outroLandscapeAsset.url;
+function outroUrl(portrait: boolean) {
+  return portrait ? outroPortraitAsset.url : outroLandscapeAsset.url;
+}
+
+/** Limpa o cache do fechamento (usado quando o buffer é invalidado). */
+export function clearOutroCache(portrait?: boolean) {
+  if (portrait === undefined) outroCache.clear();
+  else outroCache.delete(outroUrl(portrait));
+}
+
+/**
+ * Baixa o fechamento já normalizado (com cache entre montagens).
+ * Devolve sempre uma cópia nova: o processador de vídeo transfere (detach)
+ * o buffer que recebe, o que invalidaria o cache.
+ */
+export async function fetchOutro(portrait = true): Promise<Uint8Array> {
+  const url = outroUrl(portrait);
   let pending = outroCache.get(url);
   if (!pending) {
     pending = (async () => {
@@ -59,7 +73,7 @@ export function fetchOutro(portrait = true): Promise<Uint8Array> {
           `O servidor respondeu HTTP ${res.status}.`,
         );
       }
-      const buf = new Uint8Array(await res.arrayBuffer());
+      const buf = await res.arrayBuffer();
       if (buf.byteLength < 1024) {
         throw new MergeError(
           "O vídeo de fechamento recebido é inválido.",
@@ -73,8 +87,15 @@ export function fetchOutro(portrait = true): Promise<Uint8Array> {
     });
     outroCache.set(url, pending);
   }
-  return pending;
+  const buffer = await pending;
+  if (buffer.byteLength === 0) {
+    // buffer foi transferido por algum caminho antigo: refaz o download
+    outroCache.delete(url);
+    return fetchOutro(portrait);
+  }
+  return new Uint8Array(buffer.slice(0));
 }
+
 
 function lastError(): string {
   const log = getFFmpegLog();
