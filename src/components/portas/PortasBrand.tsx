@@ -51,8 +51,9 @@ export function PortasKey({ size = 32, className }: { size?: number; className?:
 
 export function PortasWordmark({ height = 32 }: { height?: number }) {
   return (
-    <span className="flex items-center gap-1.5">
-      <PortasKeyIcon size={height * 0.4} color="var(--portas-on-dark-strong)" />
+    <span className="flex items-center gap-2">
+      <PortasKeyIcon size={height * 0.5} color="var(--portas-primary-light)" />
+
       <span
         className="font-editorial font-bold text-on-dark-strong"
         style={{ fontSize: height * 0.75, lineHeight: 1 }}
