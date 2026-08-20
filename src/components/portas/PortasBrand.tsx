@@ -3,9 +3,11 @@
  * Símbolo oficial enviado pelo Portas (chave + barra vertical).
  */
 
+const PORTAS_KEY_ORANGE = "#f67149";
+
 export function PortasKeyIcon({
   size = 20,
-  color = "var(--portas-primary-light)",
+  color = PORTAS_KEY_ORANGE,
   className,
 }: {
   size?: number;
@@ -15,7 +17,7 @@ export function PortasKeyIcon({
   return (
     <svg
       viewBox="0 0 448 257"
-      width={size * 1.74}
+      width={size * (448 / 257)}
       height={size}
       className={className}
       aria-hidden
@@ -41,37 +43,6 @@ export function PortasKeyIcon({
   );
 }
 
-/**
- * Versão otimizada para tamanhos pequenos (header, favicon, badges).
- * Reproduz a chave com traço grosso + barra vertical, legível em 16-32 px.
- */
-export function PortasKeyMark({
-  size = 20,
-  color = "var(--portas-primary-light)",
-  barColor = "white",
-  className,
-}: {
-  size?: number;
-  color?: string;
-  barColor?: string;
-  className?: string;
-}) {
-  return (
-    <svg
-      viewBox="0 0 90 40"
-      width={size * 2.25}
-      height={size}
-      className={className}
-      aria-hidden
-      focusable="false"
-    >
-      <circle cx="14" cy="20" r="11" fill="none" stroke={color} strokeWidth="8" />
-      <path d="M25 13 L56 13 L50 27 L25 27 Z" fill={color} />
-      <rect x="69" y="0" width="10" height="40" rx="2" fill={barColor} />
-    </svg>
-  );
-}
-
 export function PortasKey({ size = 32, className }: { size?: number; className?: string }) {
   return (
     <span
@@ -87,7 +58,7 @@ export function PortasKey({ size = 32, className }: { size?: number; className?:
       }}
       aria-hidden
     >
-      <PortasKeyMark size={size * 0.55} />
+      <PortasKeyIcon size={size * 0.55} />
     </span>
   );
 }
@@ -95,7 +66,7 @@ export function PortasKey({ size = 32, className }: { size?: number; className?:
 export function PortasWordmark({ height = 32 }: { height?: number }) {
   return (
     <span className="flex items-center gap-1.5">
-      <PortasKeyMark size={height * 0.6} color="var(--portas-on-dark-strong)" />
+      <PortasKeyIcon size={height * 0.6} />
       <span
         className="font-editorial font-bold text-on-dark-strong"
         style={{ fontSize: height * 0.75, lineHeight: 1 }}
