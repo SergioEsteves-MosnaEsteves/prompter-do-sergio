@@ -468,8 +468,8 @@ function Index() {
               />
             </Card>
 
-            <Card title="Teleprompter">
-              <Row label="Velocidade" value={`${settings.speed} px/s`}>
+            <Card title="Teleprompter" compact>
+              <Row label="Velocidade" value={`${settings.speed} px/s`} compact>
                 <Slider
                   value={[settings.speed]}
                   min={10}
@@ -478,8 +478,7 @@ function Index() {
                   onValueChange={([v]) => patch({ speed: v })}
                 />
               </Row>
-              <div className="h-px bg-border" />
-              <Row label="Tamanho da fonte" value={`${settings.fontSize} px`}>
+              <Row label="Tamanho da fonte" value={`${settings.fontSize} px`} compact>
                 <Slider
                   value={[settings.fontSize]}
                   min={16}
@@ -488,8 +487,7 @@ function Index() {
                   onValueChange={([v]) => patch({ fontSize: v })}
                 />
               </Row>
-              <div className="h-px bg-border" />
-              <Row label="Opacidade da faixa" value={`${Math.round(settings.opacity * 100)}%`}>
+              <Row label="Opacidade da faixa" value={`${Math.round(settings.opacity * 100)}%`} compact>
                 <Slider
                   value={[settings.opacity]}
                   min={0}
@@ -498,8 +496,7 @@ function Index() {
                   onValueChange={([v]) => patch({ opacity: v })}
                 />
               </Row>
-              <div className="h-px bg-border" />
-              <Row label="Altura da faixa" value={`${Math.round(settings.height * 100)}%`}>
+              <Row label="Altura da faixa" value={`${Math.round(settings.height * 100)}%`} compact>
                 <Slider
                   value={[settings.height]}
                   min={0.25}
