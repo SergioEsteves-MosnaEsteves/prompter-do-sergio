@@ -873,19 +873,21 @@ function Segmented<T extends string>({
 function Row({
   label,
   value,
+  compact,
   children,
 }: {
   label: string;
   value: string;
+  compact?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1">
+    <div className={compact ? "space-y-0.5" : "space-y-1"}>
       <div className="flex items-baseline justify-between">
-        <span className="text-[13px] font-medium uppercase tracking-[0.4px] text-muted-foreground">
+        <span className={`font-medium uppercase tracking-[0.4px] text-muted-foreground ${compact ? "text-[12px]" : "text-[13px]"}`}>
           {label}
         </span>
-        <span className="text-[13px] font-semibold tabular-nums text-foreground">{value}</span>
+        <span className={`font-semibold tabular-nums text-foreground ${compact ? "text-[12px]" : "text-[13px]"}`}>{value}</span>
       </div>
       {children}
     </div>
