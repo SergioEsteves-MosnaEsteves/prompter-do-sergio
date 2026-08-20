@@ -22,11 +22,10 @@ export function PortasKeyIcon({
       aria-hidden
       focusable="false"
     >
-      <path
-        d="M20 0a20 20 0 1 0 19.2 26H55l4-12H39.2A20 20 0 0 0 20 0Zm0 11.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17Z"
-        fill={color}
-      />
+      <circle cx="16" cy="20" r="12" fill="none" stroke={color} strokeWidth="8" />
+      <path d="M26 14 L54 14 L48 26 L26 26 Z" fill={color} />
     </svg>
+
   );
 }
 
