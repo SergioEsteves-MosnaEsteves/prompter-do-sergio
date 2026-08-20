@@ -457,7 +457,7 @@ function Index() {
 
             <Card title="Roteiro">
               <label htmlFor="roteiro" className="block text-[13px] font-medium uppercase tracking-[0.4px] text-muted-foreground">
-                Roteiro sugerido (ajuste o texto no seu estilo)
+                Ajuste o roteiro ao seu estilo
               </label>
               <Textarea
                 id="roteiro"
