@@ -1,7 +1,7 @@
 /**
  * Marca Portas.
- * O símbolo oficial do Portas (chave + barra) é carregado como SVG em public/portas-logo.svg.
- * O ícone de chave manual abaixo é mantido como fallback para uso em outras partes da interface.
+ * O símbolo da chave abaixo reproduz o ícone oficial (círculo vazado + haste).
+ * TODO: trocar pelo SVG oficial do wordmark quando ele estiver disponível.
  */
 
 export function PortasKeyIcon({
@@ -15,16 +15,17 @@ export function PortasKeyIcon({
 }) {
   return (
     <svg
-      viewBox="0 0 340 240"
-      width={size * 1.42}
+      viewBox="0 0 64 40"
+      width={size * 1.6}
       height={size}
       className={className}
       aria-hidden
       focusable="false"
     >
-      <circle cx="100" cy="120" r="74" fill="none" stroke={color} strokeWidth="52" />
-      <path d="M100 94 H322 L302 148 H100 Z" fill={color} />
+      <circle cx="16" cy="20" r="12" fill="none" stroke={color} strokeWidth="8" />
+      <path d="M26 14 L54 14 L48 26 L26 26 Z" fill={color} />
     </svg>
+
   );
 }
 
@@ -50,9 +51,8 @@ export function PortasKey({ size = 32, className }: { size?: number; className?:
 
 export function PortasWordmark({ height = 32 }: { height?: number }) {
   return (
-    <span className="flex items-center gap-2">
-      <PortasKeyIcon size={height * 0.5} color="var(--portas-primary-light)" />
-
+    <span className="flex items-center gap-1.5">
+      <PortasKeyIcon size={height * 0.4} color="var(--portas-on-dark-strong)" />
       <span
         className="font-editorial font-bold text-on-dark-strong"
         style={{ fontSize: height * 0.75, lineHeight: 1 }}
@@ -63,19 +63,22 @@ export function PortasWordmark({ height = 32 }: { height?: number }) {
   );
 }
 
-export function PortasOfficialLogo({ height = 32, className }: { height?: number; className?: string }) {
+export function PortasLockup({ height = 32 }: { height?: number }) {
   return (
-    <img
-      src="/portas-logo.svg"
-      alt="Portas"
-      height={height}
-      className={className}
-      style={{ width: "auto", height }}
-    />
+    <span className="flex items-center gap-2">
+      <PortasWordmark height={height} />
+      <span
+        className="text-brand-light"
+        style={{
+          fontFamily: "var(--portas-font-sans)",
+          fontWeight: 600,
+          fontSize: height * 0.44,
+          letterSpacing: "1px",
+          textTransform: "uppercase",
+        }}
+      >
+        Prompter
+      </span>
+    </span>
   );
 }
-
-export function PortasLockup({ height = 32 }: { height?: number }) {
-  return <PortasOfficialLogo height={height} />;
-}
-
