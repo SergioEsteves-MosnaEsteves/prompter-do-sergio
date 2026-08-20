@@ -3,9 +3,12 @@ import { z } from "zod";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  Camera,
+  AlertTriangle,
+  Circle,
   Download,
   ExternalLink,
+  Eye,
+  KeyRound,
   Loader2,
   RectangleHorizontal,
   RectangleVertical,
@@ -18,6 +21,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
+import { SiteHeader, SiteFooter } from "@/components/portas/SiteChrome";
+import { PortasKey } from "@/components/portas/PortasBrand";
+
 import { generateScriptFromUrl } from "@/lib/script.functions";
 import {
   TeleprompterOverlay,
