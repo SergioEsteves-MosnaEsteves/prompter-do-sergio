@@ -825,11 +825,11 @@ function Index() {
 }
 
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Card({ title, compact, children }: { title: string; compact?: boolean; children: React.ReactNode }) {
   return (
-    <div className="space-y-3 rounded-lg border border-border bg-card p-4">
+    <div className={`space-y-3 rounded-lg border border-border bg-card p-4 ${compact ? "py-3" : ""}`}>
       <p className="kicker">{title}</p>
-      {children}
+      <div className={compact ? "space-y-2" : "space-y-3"}>{children}</div>
     </div>
   );
 }
