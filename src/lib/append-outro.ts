@@ -237,12 +237,33 @@ export async function appendOutro(
   };
 
   try {
-    try {
+    const writeInputs = async (outroData: Uint8Array) => {
+      // cópias novas: o worker transfere (detach) o buffer que recebe
       await ffmpeg.writeFile(recName, new Uint8Array(await recording.arrayBuffer()));
-      await ffmpeg.writeFile(outroNorm, outro);
+      await ffmpeg.writeFile(outroNorm, new Uint8Array(outroData.slice().buffer));
+    };
+
+    try {
+      await writeInputs(outro);
     } catch (error) {
-      throw new MergeError("Falha ao copiar os vídeos para o processador.", errorDetail(error));
+      const detail = errorDetail(error);
+      if (/detach|clone/i.test(detail)) {
+        // o fechamento em cache foi invalidado: baixa de novo e tenta uma vez
+        try {
+          clearOutroCache();
+          const fresh = await fetchOutro(h >= w);
+          await writeInputs(fresh);
+        } catch (retryError) {
+          throw new MergeError(
+            "Falha ao copiar os vídeos para o processador.",
+            errorDetail(retryError),
+          );
+        }
+      } else {
+        throw new MergeError("Falha ao copiar os vídeos para o processador.", detail);
+      }
     }
+
 
     let copied = canCopy && hasAudio;
     try {
