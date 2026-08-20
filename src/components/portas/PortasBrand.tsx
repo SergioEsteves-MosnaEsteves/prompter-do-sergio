@@ -1,8 +1,34 @@
 /**
  * Marca Portas.
- * TODO: substituir o wordmark/símbolo abaixo pelo SVG oficial do Portas
- * (wordmark + chave) quando ele estiver disponível no projeto.
+ * O símbolo da chave abaixo reproduz o ícone oficial (círculo vazado + haste).
+ * TODO: trocar pelo SVG oficial do wordmark quando ele estiver disponível.
  */
+
+export function PortasKeyIcon({
+  size = 20,
+  color = "var(--portas-primary-light)",
+  className,
+}: {
+  size?: number;
+  color?: string;
+  className?: string;
+}) {
+  return (
+    <svg
+      viewBox="0 0 64 40"
+      width={size * 1.6}
+      height={size}
+      className={className}
+      aria-hidden
+      focusable="false"
+    >
+      <path
+        d="M20 0a20 20 0 1 0 19.2 26H55l4-12H39.2A20 20 0 0 0 20 0Zm0 11.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17Z"
+        fill={color}
+      />
+    </svg>
+  );
+}
 
 export function PortasKey({ size = 32, className }: { size?: number; className?: string }) {
   return (
@@ -13,29 +39,27 @@ export function PortasKey({ size = 32, className }: { size?: number; className?:
         height: size,
         borderRadius: 6,
         background: "var(--portas-dark)",
-        color: "var(--portas-primary-light)",
-        fontFamily: "var(--portas-font-serif)",
-        fontWeight: 700,
-        fontSize: size * 0.62,
-        lineHeight: 1,
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
       }}
       aria-hidden
     >
-      P
+      <PortasKeyIcon size={size * 0.42} />
     </span>
   );
 }
 
 export function PortasWordmark({ height = 32 }: { height?: number }) {
   return (
-    <span
-      className="font-editorial font-bold text-on-dark-strong"
-      style={{ fontSize: height * 0.75, lineHeight: 1 }}
-    >
-      Portas
+    <span className="flex items-center gap-1.5">
+      <PortasKeyIcon size={height * 0.4} color="var(--portas-on-dark-strong)" />
+      <span
+        className="font-editorial font-bold text-on-dark-strong"
+        style={{ fontSize: height * 0.75, lineHeight: 1 }}
+      >
+        Portas
+      </span>
     </span>
   );
 }

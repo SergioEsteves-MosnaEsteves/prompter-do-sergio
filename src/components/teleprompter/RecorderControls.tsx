@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, type ReactNode } from "react";
 import { Minus, Pause, Play, Plus, RotateCcw } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
+import { PortasWordmark } from "@/components/portas/PortasBrand";
 import type { PrompterSettings } from "./TeleprompterOverlay";
 import type { Fit } from "./useRecorder";
 import { clampSpeed, SPEED_STEP } from "./useSpeedShortcuts";
@@ -42,7 +43,7 @@ function HoldButton({
       onPointerLeave={stop}
       onPointerCancel={stop}
       onContextMenu={(e) => e.preventDefault()}
-      className="flex size-14 min-h-14 min-w-14 select-none items-center justify-center rounded-full bg-secondary text-secondary-foreground active:opacity-70"
+      className="flex size-11 min-h-11 min-w-11 select-none items-center justify-center rounded-full bg-brand-dark-2 text-brand-light transition-colors duration-150 active:opacity-70"
     >
       {children}
     </button>
@@ -90,21 +91,21 @@ function Stepper({
         type="button"
         onClick={onDec}
         aria-label={`Diminuir ${label}`}
-        className="flex size-9 items-center justify-center rounded-full bg-secondary text-secondary-foreground active:opacity-70"
+        className="flex size-11 items-center justify-center rounded-full bg-brand-dark-2 text-brand-light transition-colors duration-150 active:opacity-70"
       >
-        <Minus className="size-4" />
+        <Minus className="size-5" strokeWidth={1.5} />
       </button>
       <div className="min-w-16 text-center">
-        <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
-        <div className="text-sm font-semibold text-foreground">{value}</div>
+        <div className="text-[11px] uppercase tracking-wide text-on-dark">{label}</div>
+        <div className="text-sm font-semibold text-on-dark-strong">{value}</div>
       </div>
       <button
         type="button"
         onClick={onInc}
         aria-label={`Aumentar ${label}`}
-        className="flex size-9 items-center justify-center rounded-full bg-secondary text-secondary-foreground active:opacity-70"
+        className="flex size-11 items-center justify-center rounded-full bg-brand-dark-2 text-brand-light transition-colors duration-150 active:opacity-70"
       >
-        <Plus className="size-4" />
+        <Plus className="size-5" strokeWidth={1.5} />
       </button>
     </div>
   );
@@ -127,145 +128,150 @@ export function RecorderControls({
   onFitChange,
 }: Props) {
   return (
-    <div className="pointer-events-auto absolute inset-x-0 bottom-0 space-y-4 bg-gradient-to-t from-background via-background/90 to-transparent px-4 pb-6 pt-8">
-      <div className="flex items-center justify-between">
+    <>
+      <div className="pointer-events-auto absolute inset-x-0 top-0 flex h-14 items-center justify-between border-b border-brand-dark-border bg-brand-dark px-4">
+        <PortasWordmark height={24} />
+        <div className="flex items-center gap-2 text-base font-semibold tabular-nums text-on-dark-strong">
+          {recording && <span className="size-2.5 animate-pulse rounded-full bg-brand" />}
+          {fmt(elapsed)}
+        </div>
         <button
           type="button"
           onClick={onExit}
-          className="rounded-full bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground"
+          className="text-[13px] font-semibold text-brand-light transition-colors duration-150"
         >
           Roteiro
         </button>
-        <div className="flex items-center gap-2 text-sm font-semibold tabular-nums text-foreground">
-          {recording && <span className="size-2.5 animate-pulse rounded-full bg-destructive" />}
-          {fmt(elapsed)}
-        </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={onToggleScroll}
-            aria-label={scrolling ? "Pausar rolagem" : "Iniciar rolagem"}
-            className="flex size-9 items-center justify-center rounded-full bg-secondary text-secondary-foreground"
-          >
-            {scrolling ? <Pause className="size-4" /> : <Play className="size-4" />}
-          </button>
-          <button
-            type="button"
-            onClick={onRestart}
-            aria-label="Reiniciar roteiro"
-            className="flex size-9 items-center justify-center rounded-full bg-secondary text-secondary-foreground"
-          >
-            <RotateCcw className="size-4" />
-          </button>
-        </div>
       </div>
 
-      <div className="flex items-center justify-center">
-        <Stepper
-          label="Fonte"
-          value={`${settings.fontSize}`}
-          onDec={() => onChange({ fontSize: Math.max(16, settings.fontSize - 2) })}
-          onInc={() => onChange({ fontSize: Math.min(72, settings.fontSize + 2) })}
-        />
-      </div>
-
-
-      <div className="grid grid-cols-2 gap-4">
-        <label className="space-y-1.5">
-          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Opacidade</span>
-          <Slider
-            value={[settings.opacity]}
-            min={0}
-            max={0.9}
-            step={0.05}
-            onValueChange={([v]) => onChange({ opacity: v })}
-          />
-        </label>
-        <label className="space-y-1.5">
-          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Altura</span>
-          <Slider
-            value={[settings.height]}
-            min={0.25}
-            max={0.95}
-            step={0.05}
-            onValueChange={([v]) => onChange({ height: v })}
-          />
-        </label>
-      </div>
-
-      <label className="block space-y-1.5">
-        <span className="flex items-baseline justify-between text-[10px] uppercase tracking-wide text-muted-foreground">
-          Zoom
-          <span className="tabular-nums">{zoom.toFixed(1)}x</span>
-        </span>
-        <Slider
-          value={[zoom]}
-          min={1}
-          max={maxZoom}
-          step={0.1}
-          onValueChange={([v]) => onZoomChange(v)}
-        />
-      </label>
-
-      <div className="space-y-1.5">
-        <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
-          Enquadramento
-        </span>
-        <div className="grid grid-cols-2 gap-2">
-          {(["cover", "contain"] as const).map((mode) => (
+      <div className="pointer-events-auto absolute inset-x-0 bottom-0 space-y-4 bg-brand-dark px-4 pb-6 pt-4">
+        <div className="flex items-center justify-between">
+          <div className="flex gap-2">
             <button
-              key={mode}
               type="button"
-              onClick={() => onFitChange(mode)}
-              className={`rounded-full px-3 py-2 text-xs font-medium ${
-                fit === mode
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-secondary-foreground"
-              }`}
+              onClick={onToggleScroll}
+              aria-label={scrolling ? "Pausar rolagem" : "Iniciar rolagem"}
+              className="flex size-11 items-center justify-center rounded-full bg-brand-dark-2 text-brand-light"
             >
-              {mode === "cover" ? "Preencher" : "Cabe tudo"}
+              {scrolling ? <Pause className="size-5" strokeWidth={1.5} /> : <Play className="size-5" strokeWidth={1.5} />}
             </button>
-          ))}
+            <button
+              type="button"
+              onClick={onRestart}
+              aria-label="Reiniciar roteiro"
+              className="flex size-11 items-center justify-center rounded-full bg-brand-dark-2 text-brand-light"
+            >
+              <RotateCcw className="size-5" strokeWidth={1.5} />
+            </button>
+          </div>
+
+          <Stepper
+            label="Fonte"
+            value={`${settings.fontSize}`}
+            onDec={() => onChange({ fontSize: Math.max(16, settings.fontSize - 2) })}
+            onInc={() => onChange({ fontSize: Math.min(72, settings.fontSize + 2) })}
+          />
         </div>
-      </div>
 
-
-      <div className="flex items-center justify-center gap-6 pt-1">
-        <HoldButton
-          onPress={() => onChange({ speed: clampSpeed(settings.speed - SPEED_STEP) })}
-          ariaLabel="Diminuir velocidade do teleprompter"
-        >
-          <Minus className="size-7" />
-        </HoldButton>
-
-        <div className="flex flex-col items-center gap-1">
-          <button
-            type="button"
-            onClick={onToggleRecord}
-            aria-label={recording ? "Parar gravação" : "Gravar"}
-            className="flex size-18 items-center justify-center rounded-full border-4 border-foreground/80 p-1"
-          >
-            <span
-              className={
-                recording
-                  ? "size-7 rounded-md bg-destructive"
-                  : "size-full rounded-full bg-destructive"
-              }
+        <div className="grid grid-cols-2 gap-4">
+          <label className="space-y-1">
+            <span className="text-[11px] uppercase tracking-wide text-on-dark">Opacidade</span>
+            <Slider
+              value={[settings.opacity]}
+              min={0}
+              max={0.9}
+              step={0.05}
+              onValueChange={([v]) => onChange({ opacity: v })}
             />
-          </button>
-          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
-            Velocidade <span className="tabular-nums text-foreground">{settings.speed}</span>
-          </span>
+          </label>
+          <label className="space-y-1">
+            <span className="text-[11px] uppercase tracking-wide text-on-dark">Altura</span>
+            <Slider
+              value={[settings.height]}
+              min={0.25}
+              max={0.95}
+              step={0.05}
+              onValueChange={([v]) => onChange({ height: v })}
+            />
+          </label>
         </div>
 
-        <HoldButton
-          onPress={() => onChange({ speed: clampSpeed(settings.speed + SPEED_STEP) })}
-          ariaLabel="Aumentar velocidade do teleprompter"
-        >
-          <Plus className="size-7" />
-        </HoldButton>
-      </div>
+        <label className="block space-y-1">
+          <span className="flex items-baseline justify-between text-[11px] uppercase tracking-wide text-on-dark">
+            Zoom
+            <span className="tabular-nums">{zoom.toFixed(1)}x</span>
+          </span>
+          <Slider
+            value={[zoom]}
+            min={1}
+            max={maxZoom}
+            step={0.1}
+            onValueChange={([v]) => onZoomChange(v)}
+          />
+        </label>
 
-    </div>
+        <div className="space-y-1.5">
+          <span className="text-[11px] uppercase tracking-wide text-on-dark">Enquadramento</span>
+          <div className="grid grid-cols-2 gap-1 rounded-lg bg-brand-dark-2 p-1">
+            {(["cover", "contain"] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => onFitChange(mode)}
+                className={`rounded-md px-3 py-2 text-[13px] transition-colors duration-150 ${
+                  fit === mode
+                    ? "bg-brand font-semibold text-white"
+                    : "font-medium text-on-dark"
+                }`}
+              >
+                {mode === "cover" ? "Preencher" : "Cabe tudo"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center gap-6 pt-1">
+          <div className="flex flex-col items-center gap-1">
+            <HoldButton
+              onPress={() => onChange({ speed: clampSpeed(settings.speed - SPEED_STEP) })}
+              ariaLabel="Diminuir velocidade do teleprompter"
+            >
+              <Minus className="size-5" strokeWidth={1.5} />
+            </HoldButton>
+            <span className="text-[11px] text-on-dark">Menos</span>
+          </div>
+
+          <div className="flex flex-col items-center gap-1">
+            <button
+              type="button"
+              onClick={onToggleRecord}
+              aria-label={recording ? "Parar gravação" : "Gravar"}
+              className="flex size-[72px] items-center justify-center rounded-full border-[3px] border-brand-light p-1.5"
+            >
+              <span
+                className={
+                  recording
+                    ? "size-7 rounded-md bg-brand"
+                    : "size-full rounded-full bg-brand"
+                }
+              />
+            </button>
+            <span className="text-[11px] text-on-dark">
+              Velocidade <span className="tabular-nums text-on-dark-strong">{settings.speed}</span>
+            </span>
+          </div>
+
+          <div className="flex flex-col items-center gap-1">
+            <HoldButton
+              onPress={() => onChange({ speed: clampSpeed(settings.speed + SPEED_STEP) })}
+              ariaLabel="Aumentar velocidade do teleprompter"
+            >
+              <Plus className="size-5" strokeWidth={1.5} />
+            </HoldButton>
+            <span className="text-[11px] text-on-dark">Mais</span>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
