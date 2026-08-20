@@ -1,7 +1,7 @@
 /**
  * Marca Portas.
- * O símbolo da chave abaixo reproduz o ícone oficial (círculo vazado + haste).
- * TODO: trocar pelo SVG oficial do wordmark quando ele estiver disponível.
+ * O símbolo oficial do Portas (chave + barra) é carregado como SVG em public/portas-logo.svg.
+ * O ícone de chave manual abaixo é mantido como fallback para uso em outras partes da interface.
  */
 
 export function PortasKeyIcon({
@@ -27,7 +27,6 @@ export function PortasKeyIcon({
     </svg>
   );
 }
-
 
 export function PortasKey({ size = 32, className }: { size?: number; className?: string }) {
   return (
@@ -64,22 +63,19 @@ export function PortasWordmark({ height = 32 }: { height?: number }) {
   );
 }
 
-export function PortasLockup({ height = 32 }: { height?: number }) {
+export function PortasOfficialLogo({ height = 32, className }: { height?: number; className?: string }) {
   return (
-    <span className="flex items-center gap-2">
-      <PortasWordmark height={height} />
-      <span
-        className="text-brand-light"
-        style={{
-          fontFamily: "var(--portas-font-sans)",
-          fontWeight: 600,
-          fontSize: height * 0.44,
-          letterSpacing: "1px",
-          textTransform: "uppercase",
-        }}
-      >
-        Prompter
-      </span>
-    </span>
+    <img
+      src="/portas-logo.svg"
+      alt="Portas"
+      height={height}
+      className={className}
+      style={{ width: "auto", height }}
+    />
   );
 }
+
+export function PortasLockup({ height = 32 }: { height?: number }) {
+  return <PortasOfficialLogo height={height} />;
+}
+
