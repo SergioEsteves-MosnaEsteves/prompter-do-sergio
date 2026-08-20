@@ -298,16 +298,21 @@ export function useRecorder() {
         const hasNative = typeof caps.zoom?.max === "number" && caps.zoom.max > 1;
         nativeZoomRef.current = hasNative;
         setNativeZoom(hasNative);
-        setMaxZoom(hasNative ? Math.min(caps.zoom!.max, 8) : 4);
-        // Garante que a câmera abra no campo de visão mais amplo possível.
+        const deviceMaxZoom = hasNative ? Math.min(caps.zoom!.max, 8) : 4;
+        setMaxZoom(deviceMaxZoom);
+        // Garante a largura de campo mais ampla, depois aplica o zoom que o usuário já tinha escolhido.
+        const initialZoom = Math.max(1, Math.min(zoom, deviceMaxZoom));
         if (hasNative) {
           const min = typeof caps.zoom?.min === "number" ? caps.zoom.min : 1;
           track
             ?.applyConstraints({ advanced: [{ zoom: min }] } as unknown as MediaTrackConstraints)
             .catch(() => {});
+          track
+            ?.applyConstraints({ advanced: [{ zoom: initialZoom }] } as unknown as MediaTrackConstraints)
+            .catch(() => {});
         }
-        digitalZoomRef.current = 1;
-        setZoomState(1);
+        digitalZoomRef.current = initialZoom;
+        setZoomState(initialZoom);
 
         // A prévia usa exatamente o mesmo canvas que será gravado (1:1).
         const oriented = await buildOrientedStream(
