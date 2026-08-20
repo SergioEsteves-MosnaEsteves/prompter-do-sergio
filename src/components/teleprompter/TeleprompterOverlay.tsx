@@ -54,17 +54,19 @@ export function TeleprompterOverlay({ text, settings, scrolling, resetKey }: Pro
       className="pointer-events-none absolute inset-x-0 top-0 overflow-hidden"
       style={{
         height: `${settings.height * 100}%`,
-        backgroundColor: `rgb(0 0 0 / ${settings.opacity})`,
+        backgroundColor: `color-mix(in srgb, var(--portas-dark-2) ${settings.opacity * 100}%, transparent)`,
       }}
     >
       <div
         ref={contentRef}
-        className="px-5 text-center font-semibold leading-snug tracking-tight text-white will-change-transform"
+        className="font-editorial px-5 text-center font-semibold will-change-transform"
         style={{
           fontSize: `${settings.fontSize}px`,
+          lineHeight: 1.35,
+          color: "var(--portas-on-dark-strong)",
           paddingTop: "18%",
           paddingBottom: "60%",
-          textShadow: "0 2px 10px rgb(0 0 0 / 0.85)",
+          textShadow: "0 2px 10px rgb(0 0 0 / 0.75)",
         }}
       >
         {text.split("\n").map((line, i) => (
@@ -74,14 +76,25 @@ export function TeleprompterOverlay({ text, settings, scrolling, resetKey }: Pro
         ))}
       </div>
 
-      {/* linha de leitura */}
+      {/* gradientes de entrada e saída do texto */}
       <div
-        className="absolute inset-x-0 flex items-center gap-2 px-3"
-        style={{ top: "18%" }}
-      >
-        <span className="h-px flex-1 bg-primary/70" />
-        <span className="size-2 rotate-45 bg-primary" />
-        <span className="h-px flex-1 bg-primary/70" />
+        className="pointer-events-none absolute inset-x-0 top-0 h-12"
+        style={{
+          background: "linear-gradient(to bottom, var(--portas-dark-2), transparent)",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-16"
+        style={{
+          background: "linear-gradient(to top, var(--portas-dark-2), transparent)",
+        }}
+      />
+
+      {/* linha de leitura */}
+      <div className="absolute inset-x-0 flex items-center gap-2 px-3" style={{ top: "18%" }}>
+        <span className="h-0.5 w-8 rounded-full bg-brand-light" />
+        <span className="flex-1" />
+        <span className="h-0.5 w-8 rounded-full bg-brand-light" />
       </div>
     </div>
   );
