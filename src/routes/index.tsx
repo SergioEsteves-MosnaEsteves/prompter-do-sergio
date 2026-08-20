@@ -536,6 +536,46 @@ function Index() {
                 </p>
               )}
 
+              <div className="space-y-2">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-[13px] font-medium uppercase tracking-[0.4px] text-muted-foreground">
+                    Zoom
+                  </span>
+                  <span className="text-[13px] font-semibold tabular-nums text-foreground">
+                    {rec.zoom.toFixed(1)}x
+                  </span>
+                </div>
+                <Slider
+                  value={[rec.zoom]}
+                  min={1}
+                  max={rec.maxZoom}
+                  step={0.1}
+                  onValueChange={([v]) => rec.setZoom(v)}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <span className="block text-[13px] font-medium uppercase tracking-[0.4px] text-muted-foreground">
+                  Enquadramento
+                </span>
+                <div className="grid grid-cols-2 gap-1 rounded-lg border border-border bg-muted p-1">
+                  {(["cover", "contain"] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => rec.setFit(mode)}
+                      className={`rounded-md px-3 py-2 text-[13px] font-semibold transition-all duration-150 ${
+                        rec.fit === mode
+                          ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/30"
+                          : "border border-border bg-background text-foreground hover:border-primary/40 hover:bg-muted/80 hover:text-primary"
+                      }`}
+                    >
+                      {mode === "cover" ? "Preencher" : "Cabe tudo"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {rec.cameraCount !== 1 && (
                 <button
                   type="button"
