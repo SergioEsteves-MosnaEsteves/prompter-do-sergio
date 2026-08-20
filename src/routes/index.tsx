@@ -29,7 +29,7 @@ import {
   TeleprompterOverlay,
   type PrompterSettings,
 } from "@/components/teleprompter/TeleprompterOverlay";
-import { RecorderControls } from "@/components/teleprompter/RecorderControls";
+import { RecorderControls, RecorderTopBar } from "@/components/teleprompter/RecorderControls";
 import { clampSpeed, useSpeedShortcuts } from "@/components/teleprompter/useSpeedShortcuts";
 import {
   useRecorder,
