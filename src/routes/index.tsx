@@ -808,24 +808,27 @@ function Segmented<T extends string>({
 }) {
   return (
     <div
-      className="grid gap-1 rounded-lg bg-border p-1"
+      className="grid gap-1.5 rounded-lg border border-border bg-muted p-1.5"
       style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
     >
-      {options.map((o) => (
-        <button
-          key={o.value}
-          type="button"
-          onClick={() => onChange(o.value)}
-          className={`flex h-10 items-center justify-center gap-1.5 rounded-md px-2 text-[13px] transition-colors duration-150 ${
-            value === o.value
-              ? "bg-primary font-semibold text-primary-foreground"
-              : "font-medium text-foreground hover:bg-background/60"
-          }`}
-        >
-          {o.icon}
-          {o.label}
-        </button>
-      ))}
+      {options.map((o) => {
+        const selected = value === o.value;
+        return (
+          <button
+            key={o.value}
+            type="button"
+            onClick={() => onChange(o.value)}
+            className={`flex h-10 items-center justify-center gap-1.5 rounded-md px-2 text-[13px] font-semibold transition-all duration-150 ${
+              selected
+                ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/30"
+                : "border border-border bg-background text-foreground hover:border-primary/40 hover:bg-muted/80 hover:text-primary"
+            }`}
+          >
+            {o.icon}
+            {o.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
