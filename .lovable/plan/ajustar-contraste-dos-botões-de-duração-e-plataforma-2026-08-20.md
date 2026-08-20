@@ -26,3 +26,7 @@ Apenas o componente `Segmented` em `src/routes/index.tsx`:
 - Refatorar as classes Tailwind do componente `Segmented` (~linhas 810–829).
 - Garantir que a variação selecionada use tokens semânticos (`bg-primary`, `text-primary-foreground`) e a não selecionada use `bg-background` / `border` / `text-foreground` com `hover:bg-muted`.
 - Verificar contraste visual no preview mobile e desktop.
+
+&nbsp;
+
+POnto adicional: mude o subtítulo da área do roteiro para "Ajuste o roteiro ao seu estilo)
