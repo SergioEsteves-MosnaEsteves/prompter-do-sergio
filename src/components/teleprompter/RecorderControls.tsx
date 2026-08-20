@@ -130,7 +130,7 @@ export function RecorderControls({
   if (recording) {
     return (
       <div className="pointer-events-auto shrink-0 bg-brand-dark px-4 py-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col items-center gap-3">
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -154,7 +154,7 @@ export function RecorderControls({
             </button>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-5">
             <HoldButton
               onPress={() => onChange({ speed: clampSpeed(settings.speed - SPEED_STEP) })}
               ariaLabel="Diminuir velocidade do teleprompter"
@@ -162,7 +162,7 @@ export function RecorderControls({
               <Minus className="size-5" strokeWidth={1.5} />
             </HoldButton>
 
-            <div className="flex flex-col items-center gap-0.5">
+            <div className="flex flex-col items-center gap-1">
               <button
                 type="button"
                 onClick={onToggleRecord}
@@ -171,7 +171,7 @@ export function RecorderControls({
               >
                 <span className="size-7 rounded-md bg-brand" />
               </button>
-              <span className="text-[10px] leading-none text-on-dark">
+              <span className="text-[11px] leading-none text-on-dark">
                 Velocidade <span className="tabular-nums text-on-dark-strong">{settings.speed}</span>
               </span>
             </div>
