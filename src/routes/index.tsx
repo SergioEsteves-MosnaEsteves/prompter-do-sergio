@@ -714,77 +714,79 @@ function Index() {
   }
 
   return (
-    <main className="dark fixed inset-0 flex items-center justify-center overflow-hidden bg-brand-dark">
-      <div
-        className="relative max-h-full max-w-full overflow-hidden rounded-lg"
-        style={{
-          aspectRatio: `${rec.aspect}`,
-          height: orientation === "vertical" ? "100%" : undefined,
-          width: orientation === "vertical" ? undefined : "100%",
-        }}
-      >
-        <video
-          ref={videoRef}
-          muted
-          playsInline
-          autoPlay
-          onClick={() => setChromeVisible((v) => !v)}
-          className="size-full bg-brand-dark object-contain"
-        />
-
-        <div className="pointer-events-none absolute left-3 top-3 z-10 rounded-md border border-brand-dark-border bg-brand-dark-2/90 px-2 py-1 text-[11px] text-on-dark">
-          {platform === "reels" ? "Reels" : "YouTube"} ·{" "}
-          {orientation === "vertical" ? "9:16" : "16:9"} · {duration}s
-        </div>
-
-        <TeleprompterOverlay
-          text={text}
-          settings={settings}
-          scrolling={scrolling}
-          resetKey={resetKey}
-        />
-      </div>
-
-      {speedHint !== null && (
-        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-brand-dark-2/90 px-5 py-3 text-center">
-          <div className="text-[11px] uppercase tracking-wide text-on-dark">Velocidade</div>
-          <div className="text-2xl font-bold tabular-nums text-on-dark-strong">{speedHint}</div>
-        </div>
+    <main className="dark fixed inset-0 flex flex-col overflow-hidden bg-brand-dark">
+      {chromeVisible && (
+        <RecorderTopBar recording={rec.recording} elapsed={rec.elapsed} onExit={exitCamera} />
       )}
 
-      {chromeVisible && (
-        <>
-          <button
-            type="button"
-            onClick={flipCamera}
-            aria-label="Trocar câmera"
-            className="absolute right-4 top-4 flex size-11 items-center justify-center rounded-full bg-brand-dark-2 text-brand-light"
-          >
-            <SwitchCamera className="size-5" strokeWidth={1.5} />
-          </button>
-          <RecorderControls
-            settings={settings}
-            onChange={patchWithHint}
-
-            scrolling={scrolling}
-            onToggleScroll={() => setScrolling((s) => !s)}
-            onRestart={() => setResetKey((k) => k + 1)}
-            recording={rec.recording}
-            elapsed={rec.elapsed}
-            onToggleRecord={toggleRecord}
-            onExit={exitCamera}
-            zoom={rec.zoom}
-            maxZoom={rec.maxZoom}
-            onZoomChange={rec.setZoom}
-            fit={rec.fit}
-            onFitChange={rec.setFit}
+      <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
+        <div
+          className="relative max-h-full max-w-full overflow-hidden rounded-lg"
+          style={{ aspectRatio: `${rec.aspect}` }}
+        >
+          <video
+            ref={videoRef}
+            muted
+            playsInline
+            autoPlay
+            onClick={() => setChromeVisible((v) => !v)}
+            className="size-full bg-brand-dark object-contain"
           />
 
-        </>
+          <div className="pointer-events-none absolute left-3 top-3 z-10 rounded-md border border-brand-dark-border bg-brand-dark-2/70 px-2 py-1 text-[11px] text-on-dark">
+            {platform === "reels" ? "Reels" : "YouTube"} ·{" "}
+            {orientation === "vertical" ? "9:16" : "16:9"} · {duration}s
+          </div>
+
+          {chromeVisible && (
+            <button
+              type="button"
+              onClick={flipCamera}
+              aria-label="Trocar câmera"
+              className="absolute right-3 top-3 z-10 flex size-10 items-center justify-center rounded-full bg-brand-dark-2/70 text-brand-light"
+            >
+              <SwitchCamera className="size-5" strokeWidth={1.5} />
+            </button>
+          )}
+
+          <TeleprompterOverlay
+            text={text}
+            settings={settings}
+            scrolling={scrolling}
+            resetKey={resetKey}
+          />
+        </div>
+
+        {speedHint !== null && (
+          <div className="pointer-events-none absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-brand-dark-2/90 px-5 py-3 text-center">
+            <div className="text-[11px] uppercase tracking-wide text-on-dark">Velocidade</div>
+            <div className="text-2xl font-bold tabular-nums text-on-dark-strong">{speedHint}</div>
+          </div>
+        )}
+      </div>
+
+      {chromeVisible && (
+        <RecorderControls
+          settings={settings}
+          onChange={patchWithHint}
+          scrolling={scrolling}
+          onToggleScroll={() => setScrolling((s) => !s)}
+          onRestart={() => setResetKey((k) => k + 1)}
+          recording={rec.recording}
+          elapsed={rec.elapsed}
+          onToggleRecord={toggleRecord}
+          onExit={exitCamera}
+          zoom={rec.zoom}
+          maxZoom={rec.maxZoom}
+          onZoomChange={rec.setZoom}
+          fit={rec.fit}
+          onFitChange={rec.setFit}
+        />
       )}
     </main>
   );
 }
+
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
