@@ -56,18 +56,19 @@ export const Route = createFileRoute("/")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "PROMPTER DO SERGIO — Grave vídeos com teleprompter no celular" },
+      { title: "Portas Prompter — Grave vídeos com teleprompter no celular" },
       {
         name: "description",
         content:
-          "Grave vídeos pela câmera do celular com um teleprompter rolando na tela. Controle velocidade, fonte e opacidade e baixe o vídeo direto no aparelho.",
+          "Grave vídeos comentando as notícias do mercado imobiliário com um teleprompter na tela do celular. Roteiro gerado a partir das matérias do Portas. Baixe o vídeo direto no aparelho.",
       },
-      { property: "og:title", content: "PROMPTER DO SERGIO — Grave vídeos com teleprompter no celular" },
+      { property: "og:title", content: "Portas Prompter — Grave vídeos com teleprompter no celular" },
       {
         property: "og:description",
         content:
-          "Grave vídeos pela câmera do celular com um teleprompter rolando na tela. Controle velocidade, fonte e opacidade e baixe o vídeo direto no aparelho.",
+          "Grave vídeos comentando as notícias do mercado imobiliário com um teleprompter na tela do celular. Roteiro gerado a partir das matérias do Portas. Baixe o vídeo direto no aparelho.",
       },
+
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
