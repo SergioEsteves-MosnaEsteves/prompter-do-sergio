@@ -16,7 +16,7 @@ export function AppWordmark({ height = 28 }: { height?: number }) {
     <span className="flex items-center gap-2.5">
       <AppMark size={height} />
       <span className="font-display text-[15px] font-semibold tracking-tight text-foreground">
-        Prompter
+        Prompter do Sergio
       </span>
     </span>
   );
