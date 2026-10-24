@@ -53,13 +53,13 @@ export const Route = createFileRoute("/")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Prompter — Grave vídeos com teleprompter no celular" },
+      { title: "Prompter do Sergio — Grave vídeos com teleprompter no celular" },
       {
         name: "description",
         content:
           "Grave vídeos comentando as notícias do mercado imobiliário com um teleprompter na tela do celular. Roteiro gerado por IA a partir de qualquer artigo. Baixe o vídeo direto no aparelho.",
       },
-      { property: "og:title", content: "Prompter — Grave vídeos com teleprompter no celular" },
+      { property: "og:title", content: "Prompter do Sergio — Grave vídeos com teleprompter no celular" },
       {
         property: "og:description",
         content:
