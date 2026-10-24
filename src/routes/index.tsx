@@ -8,7 +8,6 @@ import {
   Download,
   ExternalLink,
   Eye,
-  KeyRound,
   Loader2,
   RectangleHorizontal,
   RectangleVertical,
@@ -20,9 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
-import { SiteHeader, SiteFooter } from "@/components/portas/SiteChrome";
-import { PortasKey } from "@/components/portas/PortasBrand";
+import { SiteHeader, SiteFooter } from "@/components/brand/AppBrand";
 
 import { generateScriptFromUrl } from "@/lib/script.functions";
 import {
@@ -56,17 +53,17 @@ export const Route = createFileRoute("/")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Portas Prompter — Grave vídeos com teleprompter no celular" },
+      { title: "Prompter — Grave vídeos com teleprompter no celular" },
       {
         name: "description",
         content:
-          "Grave vídeos comentando as notícias do mercado imobiliário com um teleprompter na tela do celular. Roteiro gerado a partir das matérias do Portas. Baixe o vídeo direto no aparelho.",
+          "Grave vídeos comentando as notícias do mercado imobiliário com um teleprompter na tela do celular. Roteiro gerado por IA a partir de qualquer artigo. Baixe o vídeo direto no aparelho.",
       },
-      { property: "og:title", content: "Portas Prompter — Grave vídeos com teleprompter no celular" },
+      { property: "og:title", content: "Prompter — Grave vídeos com teleprompter no celular" },
       {
         property: "og:description",
         content:
-          "Grave vídeos comentando as notícias do mercado imobiliário com um teleprompter na tela do celular. Roteiro gerado a partir das matérias do Portas. Baixe o vídeo direto no aparelho.",
+          "Grave vídeos comentando as notícias do mercado imobiliário com um teleprompter na tela do celular. Roteiro gerado por IA a partir de qualquer artigo. Baixe o vídeo direto no aparelho.",
       },
 
       { property: "og:type", content: "website" },
@@ -96,9 +93,7 @@ function Index() {
   const [merging, setMerging] = useState(false);
   const [mergeProgress, setMergeProgress] = useState(0);
   const [mergeError, setMergeError] = useState<string | null>(null);
-  const [withOutro, setWithOutro] = useState(false);
   const [readyFile, setReadyFile] = useState<File | null>(null);
-  const outroDone = useRef(false);
 
 
   const search = Route.useSearch();
@@ -177,53 +172,10 @@ function Index() {
       return;
     }
 
-    if (withOutro && !outroDone.current) {
-      setMerging(true);
-      setMergeProgress(0);
-      try {
-        const { appendOutro, fetchOutro, getVideoSize, targetSize } = await import(
-          "@/lib/append-outro"
-        );
-        const portrait = rec.resultPortrait;
-        const size = targetSize(portrait);
-        const [outro, real] = await Promise.all([fetchOutro(portrait), getVideoSize(blob)]);
-        const canCopy =
-          rec.resultExt === "mp4" && real.width === size.w && real.height === size.h;
-        blob = await appendOutro(blob, outro, size, setMergeProgress, {
-          canCopy,
-          hasAudio: rec.hadAudio,
-        });
-        outroDone.current = true;
-        rec.replaceResult(blob);
-      } catch (err) {
-        console.error("[outro] falha na junção:", err);
-        const detail =
-          err && typeof err === "object" && "detail" in err
-            ? String((err as { detail: unknown }).detail)
-            : err instanceof Error
-              ? err.message
-              : typeof err === "string"
-                ? err
-                : "erro não identificado";
-        const base =
-          err instanceof Error && err.name === "MergeError"
-            ? err.message
-            : "Não foi possível juntar o vídeo de fechamento.";
-        const hint = /memory|abort|alloc|out of bounds/i.test(detail)
-          ? " Motivo: memória insuficiente no navegador para processar este vídeo."
-          : detail
-            ? ` Motivo técnico: ${detail}`
-            : "";
-        setMergeError(`${base}${hint} Salvando só a gravação.`);
-      } finally {
-        setMerging(false);
-      }
-    }
-
     setReadyFile(
       new File([blob], `gravacao-${Date.now()}.mp4`, { type: blob.type || "video/mp4" }),
     );
-  }, [rec, withOutro]);
+  }, [rec]);
 
 
   const saveReadyFile = useCallback(() => {
@@ -260,12 +212,8 @@ function Index() {
   useEffect(() => {
     if (stage !== "camera") return;
     void (async () => {
-      const [{ warmFFmpeg }, { fetchOutro }] = await Promise.all([
-        import("@/lib/ffmpeg-client"),
-        import("@/lib/append-outro"),
-      ]);
+      const { warmFFmpeg } = await import("@/lib/ffmpeg-client");
       warmFFmpeg();
-      void fetchOutro(true).catch(() => {});
     })();
   }, [stage]);
 
@@ -367,7 +315,7 @@ function Index() {
 
   if (stage === "setup") {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen">
         <SiteHeader />
         <main className="mx-auto w-full max-w-[560px] px-4 pb-12 pt-8">
           <header className="mb-8">
@@ -392,7 +340,7 @@ function Index() {
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://site.com/materia"
-                  className="h-12 rounded-lg border-border bg-background px-3.5 font-editorial text-base text-foreground placeholder:text-muted-foreground/70 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                  className="h-12 rounded-lg border-border bg-muted px-3.5 font-editorial text-base text-foreground placeholder:text-muted-foreground/70 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                 />
                 <p className="text-[13px] text-muted-foreground">
                   Geramos um roteiro em linguagem de manchete a partir da matéria.
@@ -464,7 +412,7 @@ function Index() {
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Cole aqui o texto que você vai ler..."
-                className="max-h-[31.25rem] min-h-52 resize-y overflow-y-auto rounded-lg border-border bg-background px-3.5 py-3 font-editorial text-base leading-[1.6] text-foreground placeholder:text-muted-foreground/70 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                className="max-h-[31.25rem] min-h-52 resize-y overflow-y-auto rounded-lg border-border bg-muted px-3.5 py-3 font-editorial text-base leading-[1.6] text-foreground placeholder:text-muted-foreground/70 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
               />
             </Card>
 
@@ -564,7 +512,7 @@ function Index() {
                       className={`rounded-md px-3 py-2 text-[13px] font-semibold transition-all duration-150 ${
                         rec.fit === mode
                           ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/30"
-                          : "border border-border bg-background text-foreground hover:border-primary/40 hover:bg-muted/80 hover:text-primary"
+                          : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                       }`}
                     >
                       {mode === "cover" ? "Preencher" : "Cabe tudo"}
@@ -585,25 +533,8 @@ function Index() {
               )}
             </Card>
 
-            <Card title="Fechamento">
-              <label className="flex items-start gap-3 text-[15px] text-foreground">
-                <Checkbox
-                  checked={withOutro}
-                  onCheckedChange={(v) => setWithOutro(v === true)}
-                  className="mt-0.5 size-5 rounded border-border data-[state=checked]:border-primary data-[state=checked]:bg-primary"
-                />
-                <span className="flex-1">
-                  Incluir vídeo de fechamento no download
-                  <span className="mt-0.5 block text-[13px] text-muted-foreground">
-                    Adiciona a vinheta final ao arquivo baixado.
-                  </span>
-                </span>
-                <PortasKey size={32} />
-              </label>
-            </Card>
-
             {rec.error && (
-              <div ref={errorRef} className="space-y-3 rounded-lg border border-border bg-card p-4">
+              <div ref={errorRef} className="space-y-3 glass rounded-2xl p-5">
                 <p className="flex items-start gap-2 text-[13px] text-destructive">
                   <AlertTriangle className="mt-0.5 size-4 shrink-0" />
                   {rec.error}
@@ -631,7 +562,7 @@ function Index() {
               {opening ? "Abrindo câmera..." : "Iniciar gravação"}
             </Button>
 
-            <div className="flex items-start gap-3 rounded-lg border border-border border-l-[3px] border-l-accent bg-card p-3">
+            <div className="flex items-start gap-3 glass rounded-2xl p-3">
               <Eye className="mt-0.5 size-5 shrink-0 text-primary" strokeWidth={1.5} />
               <p className="text-[13px] text-foreground">
                 O teleprompter aparece só na sua tela — ele não fica gravado no vídeo.
@@ -647,19 +578,19 @@ function Index() {
   if (stage === "preview" && rec.resultUrl) {
     const busy = merging || converting;
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen">
         <SiteHeader />
         <main className="mx-auto w-full max-w-[560px] px-4 pb-12 pt-8">
           <h1 className="font-editorial text-[28px] font-bold leading-[1.15] text-foreground">
             Sua gravação
           </h1>
 
-          <div className="mt-6 space-y-4 rounded-lg border border-border bg-background p-4">
+          <div className="mt-6 space-y-4 glass rounded-2xl p-5">
             <video
               src={rec.resultUrl}
               controls
               playsInline
-              className="w-full rounded-lg bg-brand-dark"
+              className="w-full rounded-lg bg-background"
             />
 
             {convertError && (
@@ -699,13 +630,6 @@ function Index() {
                     : "Preparar vídeo para salvar"}
             </Button>
 
-            {withOutro && (
-              <p className="flex items-center gap-2 text-[13px] text-muted-foreground">
-                <KeyRound className="size-4 text-accent" strokeWidth={1.5} />
-                Inclui o vídeo de fechamento do Portas
-              </p>
-            )}
-
             {mergeError && (
               <p className="flex items-start gap-2 text-[13px] text-destructive">
                 <AlertTriangle className="mt-0.5 size-4 shrink-0" />
@@ -722,7 +646,6 @@ function Index() {
             <button
               type="button"
               onClick={() => {
-                outroDone.current = false;
                 rec.clearResult();
                 openCamera();
               }}
@@ -734,7 +657,6 @@ function Index() {
             <button
               type="button"
               onClick={() => {
-                outroDone.current = false;
                 rec.clearResult();
                 rec.stopStream();
                 setStage("setup");
@@ -751,7 +673,7 @@ function Index() {
   }
 
   return (
-    <main className="dark fixed inset-0 flex flex-col overflow-hidden bg-brand-dark">
+    <main className="dark fixed inset-0 flex flex-col overflow-hidden bg-background">
       {chromeVisible && (
         <RecorderTopBar recording={rec.recording} elapsed={rec.elapsed} onExit={exitCamera} />
       )}
@@ -767,10 +689,10 @@ function Index() {
             playsInline
             autoPlay
             onClick={() => setChromeVisible((v) => !v)}
-            className="size-full bg-brand-dark object-contain"
+            className="size-full bg-background object-contain"
           />
 
-          <div className="pointer-events-none absolute left-3 top-3 z-10 rounded-md border border-brand-dark-border bg-brand-dark-2/70 px-2 py-1 text-[11px] text-on-dark">
+          <div className="pointer-events-none absolute left-3 top-3 z-10 rounded-md glass-chip px-2 py-1 text-[11px] text-on-dark">
             {platform === "reels" ? "Reels" : "YouTube"} ·{" "}
             {orientation === "vertical" ? "9:16" : "16:9"} · {duration}s
           </div>
@@ -780,7 +702,7 @@ function Index() {
               type="button"
               onClick={flipCamera}
               aria-label="Trocar câmera"
-              className="absolute right-3 top-3 z-10 flex size-10 items-center justify-center rounded-full bg-brand-dark-2/70 text-brand-light"
+              className="absolute right-3 top-3 z-10 flex size-10 items-center justify-center rounded-full glass-chip text-foreground"
             >
               <SwitchCamera className="size-5" strokeWidth={1.5} />
             </button>
@@ -795,7 +717,7 @@ function Index() {
         </div>
 
         {speedHint !== null && (
-          <div className="pointer-events-none absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-brand-dark-2/90 px-5 py-3 text-center">
+          <div className="pointer-events-none absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2 rounded-lg glass px-5 py-3 text-center">
             <div className="text-[11px] uppercase tracking-wide text-on-dark">Velocidade</div>
             <div className="text-2xl font-bold tabular-nums text-on-dark-strong">{speedHint}</div>
           </div>
@@ -827,7 +749,7 @@ function Index() {
 
 function Card({ title, compact, children }: { title: string; compact?: boolean; children: React.ReactNode }) {
   return (
-    <div className={`space-y-3 rounded-lg border border-border bg-card p-4 ${compact ? "py-3" : ""}`}>
+    <div className={`space-y-3 glass rounded-2xl p-5 ${compact ? "py-3" : ""}`}>
       <p className="kicker">{title}</p>
       <div className={compact ? "space-y-2" : "space-y-3"}>{children}</div>
     </div>
@@ -858,7 +780,7 @@ function Segmented<T extends string>({
             className={`flex h-10 items-center justify-center gap-1.5 rounded-md px-2 text-[13px] font-semibold transition-all duration-150 ${
               selected
                 ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/30"
-                : "border border-border bg-background text-foreground hover:border-primary/40 hover:bg-muted/80 hover:text-primary"
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             }`}
           >
             {o.icon}

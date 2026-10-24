@@ -77,16 +77,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Portas Prompter — Grave vídeos com teleprompter no celular" },
-      { name: "description", content: "Grave vídeos comentando as notícias do mercado imobiliário com um teleprompter na tela do celular. Roteiro gerado a partir das matérias do Portas. Baixe o vídeo direto no aparelho." },
-      { name: "author", content: "Portas" },
+      { title: "Prompter — Grave vídeos com teleprompter no celular" },
+      { name: "description", content: "Grave vídeos comentando as notícias do mercado imobiliário com um teleprompter na tela do celular. Roteiro gerado por IA a partir de qualquer artigo. Baixe o vídeo direto no aparelho." },
+      { name: "author", content: "Prompter" },
       { name: "theme-color", content: "#25302c" },
-      { property: "og:title", content: "Portas Prompter — Grave vídeos com teleprompter no celular" },
-      { property: "og:description", content: "Grave vídeos comentando as notícias do mercado imobiliário com um teleprompter na tela do celular. Roteiro gerado a partir das matérias do Portas. Baixe o vídeo direto no aparelho." },
+      { property: "og:title", content: "Prompter — Grave vídeos com teleprompter no celular" },
+      { property: "og:description", content: "Grave vídeos comentando as notícias do mercado imobiliário com um teleprompter na tela do celular. Roteiro gerado por IA a partir de qualquer artigo. Baixe o vídeo direto no aparelho." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Portas Prompter — Grave vídeos com teleprompter no celular" },
-      { name: "twitter:description", content: "Grave vídeos comentando as notícias do mercado imobiliário com um teleprompter na tela do celular. Roteiro gerado a partir das matérias do Portas. Baixe o vídeo direto no aparelho." },
+      { name: "twitter:title", content: "Prompter — Grave vídeos com teleprompter no celular" },
+      { name: "twitter:description", content: "Grave vídeos comentando as notícias do mercado imobiliário com um teleprompter na tela do celular. Roteiro gerado por IA a partir de qualquer artigo. Baixe o vídeo direto no aparelho." },
     ],
     links: [
       {
@@ -97,7 +97,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:wght@400;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap",
       },
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "apple-touch-icon", href: "/favicon.svg" },

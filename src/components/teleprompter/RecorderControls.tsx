@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, type ReactNode } from "react";
 import { Minus, Pause, Play, Plus, RotateCcw } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
-import { PortasWordmark } from "@/components/portas/PortasBrand";
+import { AppWordmark } from "@/components/brand/AppBrand";
 import type { PrompterSettings } from "./TeleprompterOverlay";
 import type { Fit } from "./useRecorder";
 import { clampSpeed, SPEED_STEP } from "./useSpeedShortcuts";
@@ -43,7 +43,7 @@ function HoldButton({
       onPointerLeave={stop}
       onPointerCancel={stop}
       onContextMenu={(e) => e.preventDefault()}
-      className="flex size-11 min-h-11 min-w-11 select-none items-center justify-center rounded-full bg-brand-dark-2 text-brand-light transition-colors duration-150 active:opacity-70"
+      className="flex size-11 min-h-11 min-w-11 select-none items-center justify-center rounded-full glass-chip text-brand-light transition-colors duration-150 active:opacity-70"
     >
       {children}
     </button>
@@ -91,7 +91,7 @@ function Stepper({
         type="button"
         onClick={onDec}
         aria-label={`Diminuir ${label}`}
-        className="flex size-11 items-center justify-center rounded-full bg-brand-dark-2 text-brand-light transition-colors duration-150 active:opacity-70"
+        className="flex size-11 items-center justify-center rounded-full glass-chip text-brand-light transition-colors duration-150 active:opacity-70"
       >
         <Minus className="size-5" strokeWidth={1.5} />
       </button>
@@ -103,7 +103,7 @@ function Stepper({
         type="button"
         onClick={onInc}
         aria-label={`Aumentar ${label}`}
-        className="flex size-11 items-center justify-center rounded-full bg-brand-dark-2 text-brand-light transition-colors duration-150 active:opacity-70"
+        className="flex size-11 items-center justify-center rounded-full glass-chip text-brand-light transition-colors duration-150 active:opacity-70"
       >
         <Plus className="size-5" strokeWidth={1.5} />
       </button>
@@ -129,14 +129,14 @@ export function RecorderControls({
 }: Props) {
   if (recording) {
     return (
-      <div className="pointer-events-auto shrink-0 bg-brand-dark px-4 py-3">
+      <div className="pointer-events-auto shrink-0 bg-background/60 backdrop-blur-xl px-4 py-3">
         <div className="flex flex-col items-center gap-3">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onToggleScroll}
               aria-label={scrolling ? "Pausar rolagem" : "Iniciar rolagem"}
-              className="flex size-10 min-h-10 min-w-10 items-center justify-center rounded-full bg-brand-dark-2 text-brand-light"
+              className="flex size-10 min-h-10 min-w-10 items-center justify-center rounded-full glass-chip text-brand-light"
             >
               {scrolling ? (
                 <Pause className="size-4" strokeWidth={1.5} />
@@ -148,7 +148,7 @@ export function RecorderControls({
               type="button"
               onClick={onRestart}
               aria-label="Reiniciar roteiro"
-              className="flex size-10 min-h-10 min-w-10 items-center justify-center rounded-full bg-brand-dark-2 text-brand-light"
+              className="flex size-10 min-h-10 min-w-10 items-center justify-center rounded-full glass-chip text-brand-light"
             >
               <RotateCcw className="size-4" strokeWidth={1.5} />
             </button>
@@ -189,7 +189,7 @@ export function RecorderControls({
   }
 
   return (
-    <div className="pointer-events-auto max-h-[45vh] shrink-0 space-y-4 overflow-y-auto bg-brand-dark px-4 pb-6 pt-4">
+    <div className="pointer-events-auto max-h-[45vh] shrink-0 space-y-4 overflow-y-auto bg-background/60 backdrop-blur-xl px-4 pb-6 pt-4">
 
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
@@ -197,7 +197,7 @@ export function RecorderControls({
               type="button"
               onClick={onToggleScroll}
               aria-label={scrolling ? "Pausar rolagem" : "Iniciar rolagem"}
-              className="flex size-11 items-center justify-center rounded-full bg-brand-dark-2 text-brand-light"
+              className="flex size-11 items-center justify-center rounded-full glass-chip text-brand-light"
             >
               {scrolling ? <Pause className="size-5" strokeWidth={1.5} /> : <Play className="size-5" strokeWidth={1.5} />}
             </button>
@@ -205,7 +205,7 @@ export function RecorderControls({
               type="button"
               onClick={onRestart}
               aria-label="Reiniciar roteiro"
-              className="flex size-11 items-center justify-center rounded-full bg-brand-dark-2 text-brand-light"
+              className="flex size-11 items-center justify-center rounded-full glass-chip text-brand-light"
             >
               <RotateCcw className="size-5" strokeWidth={1.5} />
             </button>
@@ -258,7 +258,7 @@ export function RecorderControls({
 
         <div className="space-y-1.5">
           <span className="text-[11px] uppercase tracking-wide text-on-dark">Enquadramento</span>
-          <div className="grid grid-cols-2 gap-1 rounded-lg bg-brand-dark-2 p-1">
+          <div className="grid grid-cols-2 gap-1 rounded-lg glass-chip p-1">
             {(["cover", "contain"] as const).map((mode) => (
               <button
                 key={mode}
@@ -325,8 +325,8 @@ export function RecorderTopBar({
   onExit: () => void;
 }) {
   return (
-    <div className="pointer-events-auto flex h-14 shrink-0 items-center justify-between border-b border-brand-dark-border bg-brand-dark px-4">
-      <PortasWordmark height={24} />
+    <div className="pointer-events-auto flex h-14 shrink-0 items-center justify-between border-b border-brand-dark-border bg-background/60 backdrop-blur-xl px-4">
+      <AppWordmark height={26} />
       <div className="flex items-center gap-2 text-base font-semibold tabular-nums text-on-dark-strong">
         {recording && <span className="size-2.5 animate-pulse rounded-full bg-brand" />}
         {fmt(elapsed)}

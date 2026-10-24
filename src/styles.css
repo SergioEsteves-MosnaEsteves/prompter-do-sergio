@@ -4,12 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/*
- * Design system Portas Prompter.
- * Tokens da marca Portas (portas.com.br) em :root, mapeados para os tokens
- * semânticos do shadcn/Tailwind em @theme inline.
- * Tema escuro (.dark) é usado no cabeçalho, rodapé e na tela de gravação.
- */
+/* Design system: glassmorphism clean, tema escuro único. */
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -19,8 +14,8 @@
   --radius-2xl: var(--radius);
   --radius-3xl: var(--radius);
   --radius-4xl: var(--radius);
-  --font-sans: var(--portas-font-sans);
-  --font-serif: var(--portas-font-serif);
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -43,14 +38,14 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
-  --color-brand: var(--portas-primary);
-  --color-brand-light: var(--portas-primary-light);
-  --color-brand-dark: var(--portas-dark);
-  --color-brand-dark-2: var(--portas-dark-2);
-  --color-brand-dark-border: var(--portas-dark-border);
-  --color-brand-dark-divider: var(--portas-dark-divider);
-  --color-on-dark: var(--portas-on-dark);
-  --color-on-dark-strong: var(--portas-on-dark-strong);
+  --color-brand: var(--app-primary);
+  --color-brand-light: var(--app-primary-light);
+  --color-brand-dark: var(--app-dark);
+  --color-brand-dark-2: var(--app-dark-2);
+  --color-brand-dark-border: var(--app-dark-border);
+  --color-brand-dark-divider: var(--app-dark-divider);
+  --color-on-dark: var(--app-on-dark);
+  --color-on-dark-strong: var(--app-on-dark-strong);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -66,87 +61,68 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-:root {
-  /* marca Portas — tokens extraídos do site portas.com.br */
-  --portas-primary: #d64113;
-  --portas-primary-dark: #bd3910;
-  --portas-primary-light: #ff774a;
-  --portas-dark: #25302c;
-  --portas-dark-2: #212b28;
-  --portas-dark-border: #303c38;
-  --portas-dark-divider: #495752;
-  --portas-on-dark: #d3d6d5;
-  --portas-on-dark-strong: #ffffff;
-  --portas-bg: #ffffff;
-  --portas-surface: #f6f6f4;
-  --portas-text: #282828;
-  --portas-text-muted: #6b6b6b;
-  --portas-divider: #ededed;
-  --portas-success: #2e7d4f;
-  --portas-error: #c62828;
-  --portas-warning: #e0a100;
-  --portas-radius: 8px;
-  --portas-font-serif: "Source Serif 4", Georgia, serif;
-  --portas-font-sans: "Inter", -apple-system, system-ui, sans-serif;
+@theme inline {
+  --font-display: var(--app-font-display);
+}
 
-  /* mapeamento semântico — tema claro */
-  --radius: 0.5rem;
-  --background: var(--portas-bg);
-  --foreground: var(--portas-text);
-  --card: var(--portas-surface);
-  --card-foreground: var(--portas-text);
-  --popover: var(--portas-bg);
-  --popover-foreground: var(--portas-text);
-  --primary: var(--portas-primary);
-  --primary-foreground: #ffffff;
-  --secondary: var(--portas-surface);
-  --secondary-foreground: var(--portas-text);
-  --muted: var(--portas-surface);
-  --muted-foreground: var(--portas-text-muted);
-  --accent: var(--portas-primary-light);
-  --accent-foreground: var(--portas-dark);
-  --destructive: var(--portas-error);
-  --destructive-foreground: #ffffff;
-  --success: var(--portas-success);
-  --warning: var(--portas-warning);
-  --border: var(--portas-divider);
-  --input: var(--portas-divider);
-  --ring: var(--portas-primary);
-  --chart-1: var(--portas-primary);
-  --chart-2: var(--portas-primary-light);
-  --chart-3: var(--portas-dark);
-  --chart-4: var(--portas-success);
-  --chart-5: var(--portas-warning);
-  --sidebar: var(--portas-surface);
-  --sidebar-foreground: var(--portas-text);
-  --sidebar-primary: var(--portas-primary);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--portas-divider);
-  --sidebar-accent-foreground: var(--portas-text);
-  --sidebar-border: var(--portas-divider);
-  --sidebar-ring: var(--portas-primary);
+:root {
+  /* paleta neutra — glassmorphism clean */
+  --app-primary: oklch(0.86 0.06 265);
+  --app-primary-light: oklch(0.9 0.05 265);
+  --app-dark: oklch(0.17 0.015 265);
+  --app-dark-2: oklch(0.21 0.015 265);
+  --app-dark-border: oklch(1 0 0 / 0.12);
+  --app-dark-divider: oklch(1 0 0 / 0.18);
+  --app-on-dark: oklch(0.78 0.015 265);
+  --app-on-dark-strong: oklch(0.98 0.005 265);
+  --app-font-display: "Sora", system-ui, sans-serif;
+  --app-font-serif: "Manrope", system-ui, sans-serif;
+  --app-font-sans: "Manrope", system-ui, sans-serif;
+  --glass-bg: oklch(1 0 0 / 0.06);
+  --glass-bg-strong: oklch(1 0 0 / 0.1);
+  --glass-border: oklch(1 0 0 / 0.12);
+  --glass-shadow: 0 10px 40px -12px oklch(0 0 0 / 0.5), inset 0 1px 0 oklch(1 0 0 / 0.1);
+
+  --radius: 1rem;
+  --background: var(--app-dark);
+  --foreground: var(--app-on-dark-strong);
+  --card: var(--glass-bg);
+  --card-foreground: var(--app-on-dark-strong);
+  --popover: var(--app-dark-2);
+  --popover-foreground: var(--app-on-dark-strong);
+  --primary: oklch(0.96 0.01 265);
+  --primary-foreground: oklch(0.18 0.02 265);
+  --secondary: var(--glass-bg-strong);
+  --secondary-foreground: var(--app-on-dark-strong);
+  --muted: oklch(1 0 0 / 0.05);
+  --muted-foreground: var(--app-on-dark);
+  --accent: var(--app-primary);
+  --accent-foreground: var(--app-dark);
+  --destructive: oklch(0.7 0.18 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --success: oklch(0.75 0.14 155);
+  --warning: oklch(0.82 0.14 85);
+  --border: var(--glass-border);
+  --input: oklch(1 0 0 / 0.14);
+  --ring: var(--app-primary);
+  --chart-1: var(--app-primary);
+  --chart-2: var(--app-primary-light);
+  --chart-3: var(--app-on-dark);
+  --chart-4: var(--success);
+  --chart-5: var(--warning);
+  --sidebar: var(--app-dark-2);
+  --sidebar-foreground: var(--app-on-dark-strong);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--glass-bg);
+  --sidebar-accent-foreground: var(--app-on-dark-strong);
+  --sidebar-border: var(--glass-border);
+  --sidebar-ring: var(--app-primary);
 }
 
 .dark {
-  --background: var(--portas-dark);
-  --foreground: var(--portas-on-dark);
-  --card: var(--portas-dark-2);
-  --card-foreground: var(--portas-on-dark-strong);
-  --popover: var(--portas-dark-2);
-  --popover-foreground: var(--portas-on-dark-strong);
-  --primary: var(--portas-primary-light);
-  --primary-foreground: var(--portas-dark);
-  --secondary: var(--portas-dark-2);
-  --secondary-foreground: var(--portas-on-dark);
-  --muted: var(--portas-dark-2);
-  --muted-foreground: var(--portas-on-dark);
-  --accent: var(--portas-dark-border);
-  --accent-foreground: var(--portas-on-dark-strong);
-  --destructive: var(--portas-primary);
-  --destructive-foreground: #ffffff;
-  --border: var(--portas-dark-border);
-  --input: var(--portas-dark-border);
-  --ring: var(--portas-primary-light);
+  --background: var(--app-dark);
+  --foreground: var(--app-on-dark-strong);
 }
 
 @layer base {
@@ -155,35 +131,61 @@
   }
 
   body {
-    background-color: var(--color-background);
+    min-height: 100vh;
     color: var(--color-foreground);
-    font-family: var(--portas-font-sans);
+    font-family: var(--app-font-sans);
     -webkit-font-smoothing: antialiased;
+    background-color: var(--app-dark);
+    background-image:
+      radial-gradient(60% 45% at 15% 0%, oklch(0.45 0.12 265 / 0.45), transparent 70%),
+      radial-gradient(50% 40% at 100% 30%, oklch(0.5 0.1 200 / 0.3), transparent 70%),
+      radial-gradient(60% 50% at 50% 100%, oklch(0.4 0.1 300 / 0.3), transparent 70%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--app-font-display);
+    letter-spacing: -0.02em;
   }
 }
 
+@utility glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(24px) saturate(140%);
+}
+
+@utility glass-chip {
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.12);
+  backdrop-filter: blur(16px);
+}
+
 @utility font-editorial {
-  font-family: var(--portas-font-serif);
+  font-family: var(--app-font-serif);
 }
 
 @utility kicker {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-family: var(--portas-font-sans);
+  font-family: var(--app-font-sans);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--portas-text-muted);
+  color: var(--app-on-dark);
 
   &::before {
     content: "";
     display: block;
-    width: 3px;
-    height: 1em;
-    background: var(--portas-primary);
-    border-radius: 2px;
+    width: 6px;
+    height: 6px;
+    background: var(--app-primary);
+    border-radius: 999px;
+    box-shadow: 0 0 10px var(--app-primary);
   }
 }
 

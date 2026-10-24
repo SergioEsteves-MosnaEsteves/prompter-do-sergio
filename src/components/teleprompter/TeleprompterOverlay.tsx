@@ -54,7 +54,7 @@ export function TeleprompterOverlay({ text, settings, scrolling, resetKey }: Pro
       className="pointer-events-none absolute inset-x-0 top-0 overflow-hidden"
       style={{
         height: `${settings.height * 100}%`,
-        backgroundColor: `color-mix(in srgb, var(--portas-dark-2) ${settings.opacity * 100}%, transparent)`,
+        backgroundColor: `color-mix(in srgb, var(--app-dark-2) ${settings.opacity * 100}%, transparent)`,
       }}
     >
       <div
@@ -63,7 +63,7 @@ export function TeleprompterOverlay({ text, settings, scrolling, resetKey }: Pro
         style={{
           fontSize: `${settings.fontSize}px`,
           lineHeight: 1.35,
-          color: "var(--portas-on-dark-strong)",
+          color: "var(--app-on-dark-strong)",
           paddingTop: "18%",
           paddingBottom: "60%",
           textShadow: "0 2px 10px rgb(0 0 0 / 0.75)",
@@ -80,13 +80,13 @@ export function TeleprompterOverlay({ text, settings, scrolling, resetKey }: Pro
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-12"
         style={{
-          background: "linear-gradient(to bottom, var(--portas-dark-2), transparent)",
+          background: "linear-gradient(to bottom, var(--app-dark-2), transparent)",
         }}
       />
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 h-16"
         style={{
-          background: "linear-gradient(to top, var(--portas-dark-2), transparent)",
+          background: "linear-gradient(to top, var(--app-dark-2), transparent)",
         }}
       />
 
